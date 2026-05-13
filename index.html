@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dove Recovery — Referral CRM</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --primary: #2c5f7c;
+    --primary-light: #3a7ca5;
+    --primary-dark: #1e4258;
+    --accent: #5ba89d;
+    --accent-light: #7bc4b9;
+    --bg: #f4f7f9;
+    --card: #ffffff;
+    --text: #2d3748;
+    --text-light: #718096;
+    --border: #e2e8f0;
+    --danger: #c53030;
+    --danger-light: #feb2b2;
+    --success: #276749;
+    --success-light: #c6f6d5;
+    --warning: #c05621;
+    --warning-light: #feebc8;
+    --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+    --shadow-md: 0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.06);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Segoe UI',system-ui,-apple-system,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+  /* ---- Login Screen ---- */
+  .login-screen {
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 50%, var(--accent) 100%);
+  }
+  .login-box {
+    background:var(--card); border-radius:14px; padding:40px 36px; width:420px; max-width:92vw;
+    box-shadow: 0 20px 60px rgba(0,0,0,.25);
+  }
+  .login-box h1 { font-size:22px; margin-bottom:4px; color:var(--primary-dark); }
+  .login-box .subtitle { font-size:13px; color:var(--text-light); margin-bottom:28px; }
+  .login-box .tabs { display:flex; gap:0; margin-bottom:24px; border-bottom:2px solid var(--border); }
+  .login-box .tabs button {
+    flex:1; padding:10px; background:none; border:none; font-size:14px; font-weight:600;
+    color:var(--text-light); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px;
+  }
+  .login-box .tabs button.active { color:var(--primary); border-bottom-color:var(--primary); }
+  .login-box .form-group { margin-bottom:14px; }
+  .login-box .form-group label { display:block; font-size:13px; font-weight:600; margin-bottom:4px; }
+  .login-box .form-group input {
+    width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:7px; font-size:14px;
+  }
+  .login-box .form-group input:focus { outline:none; border-color:var(--primary-light); box-shadow:0 0 0 3px rgba(58,124,165,.15); }
+  .login-box .name-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .login-box .btn-login {
+    width:100%; padding:12px; background:var(--primary); color:#fff; border:none; border-radius:8px;
+    font-size:15px; font-weight:600; cursor:pointer; margin-top:8px;
+  }
+  .login-box .btn-login:hover { background:var(--primary-light); }
+  .login-box .error-msg { color:var(--danger); font-size:13px; margin-top:8px; display:none; }
+
+  /* ---- App Layout ---- */
+  .app-wrap { display:flex; min-height:100vh; }
+  .sidebar {
+    width:240px; min-height:100vh; background:var(--primary-dark); color:#fff;
+    display:flex; flex-direction:column; position:fixed; top:0; left:0; bottom:0; z-index:100;
+  }
+  .sidebar .logo { padding:24px 20px 20px; border-bottom:1px solid rgba(255,255,255,.12); }
+  .sidebar .logo h1 { font-size:18px; font-weight:700; letter-spacing:.3px; }
+  .sidebar .logo p { font-size:11px; opacity:.6; margin-top:2px; letter-spacing:.5px; text-transform:uppercase; }
+  .sidebar nav { flex:1; padding:12px 0; }
+  .sidebar nav button {
+    width:100%; text-align:left; background:none; border:none; color:rgba(255,255,255,.7);
+    padding:11px 20px; font-size:14px; cursor:pointer; display:flex; align-items:center; gap:10px;
+    transition: background .15s, color .15s;
+  }
+  .sidebar nav button:hover { background:rgba(255,255,255,.08); color:#fff; }
+  .sidebar nav button.active { background:rgba(255,255,255,.13); color:#fff; font-weight:600; }
+  .sidebar nav button svg { width:18px; height:18px; flex-shrink:0; }
+  .sidebar .sidebar-footer {
+    padding:16px 20px; border-top:1px solid rgba(255,255,255,.12); font-size:13px;
+  }
+  .sidebar .sidebar-footer .user-name { font-weight:600; margin-bottom:6px; }
+  .sidebar .sidebar-footer button {
+    background:rgba(255,255,255,.1); border:none; color:rgba(255,255,255,.8);
+    padding:6px 12px; border-radius:5px; font-size:12px; cursor:pointer; width:100%;
+  }
+  .sidebar .sidebar-footer button:hover { background:rgba(255,255,255,.18); }
+  .main-area { margin-left:240px; flex:1; }
+  .topbar {
+    background:var(--card); border-bottom:1px solid var(--border);
+    padding:16px 32px; display:flex; align-items:center; justify-content:space-between;
+    position:sticky; top:0; z-index:50; box-shadow:var(--shadow);
+  }
+  .topbar h2 { font-size:20px; font-weight:600; }
+  .content { padding:28px 32px; }
+
+  /* ---- Reusable ---- */
+  .stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:18px; margin-bottom:28px; }
+  .stat-card { background:var(--card); border-radius:10px; padding:20px 22px; box-shadow:var(--shadow); border-left:4px solid var(--primary); }
+  .stat-card.inbound { border-left-color:var(--accent); }
+  .stat-card.outbound { border-left-color:var(--warning); }
+  .stat-card.users { border-left-color:var(--primary-light); }
+  .stat-card h3 { font-size:12px; text-transform:uppercase; letter-spacing:.6px; color:var(--text-light); margin-bottom:6px; }
+  .stat-card .num { font-size:28px; font-weight:700; }
+
+  .table-card { background:var(--card); border-radius:10px; box-shadow:var(--shadow); overflow:hidden; }
+  .table-toolbar { padding:16px 20px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; border-bottom:1px solid var(--border); }
+  .table-toolbar input[type=text] { padding:8px 12px; border:1px solid var(--border); border-radius:6px; font-size:13px; width:220px; }
+  .table-toolbar .spacer { flex:1; }
+  table { width:100%; border-collapse:collapse; }
+  thead th {
+    text-align:left; padding:12px 16px; font-size:12px; text-transform:uppercase;
+    letter-spacing:.5px; color:var(--text-light); border-bottom:2px solid var(--border);
+    background:#fafbfc; cursor:pointer; user-select:none; white-space:nowrap;
+  }
+  thead th:hover { color:var(--primary); }
+  tbody td { padding:12px 16px; font-size:14px; border-bottom:1px solid var(--border); }
+  tbody tr:hover { background:#f7fafc; }
+  .empty-state { padding:48px 20px; text-align:center; color:var(--text-light); }
+  .empty-state p { margin-top:8px; font-size:14px; }
+
+  .btn {
+    padding:9px 18px; border:none; border-radius:7px; font-size:13px; font-weight:600;
+    cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:background .15s,transform .1s;
+  }
+  .btn:active { transform:scale(.97); }
+  .btn:disabled { opacity:.5; cursor:not-allowed; }
+  .btn-primary { background:var(--primary); color:#fff; }
+  .btn-primary:hover:not(:disabled) { background:var(--primary-light); }
+  .btn-accent { background:var(--accent); color:#fff; }
+  .btn-accent:hover:not(:disabled) { background:var(--accent-light); }
+  .btn-danger { background:var(--danger); color:#fff; }
+  .btn-danger:hover:not(:disabled) { background:#e53e3e; }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--text); }
+  .btn-outline:hover:not(:disabled) { background:#f7fafc; }
+  .btn-sm { padding:6px 12px; font-size:12px; }
+
+  .modal-overlay {
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:200;
+    align-items:center; justify-content:center;
+  }
+  .modal-overlay.open { display:flex; }
+  .modal { background:var(--card); border-radius:12px; width:480px; max-width:94vw; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.2); }
+  .modal-header { padding:20px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  .modal-header h3 { font-size:17px; font-weight:600; }
+  .modal-header button { background:none; border:none; font-size:20px; cursor:pointer; color:var(--text-light); }
+  .modal-body { padding:24px; }
+  .modal-footer { padding:16px 24px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:10px; }
+  .form-group { margin-bottom:16px; }
+  .form-group label { display:block; font-size:13px; font-weight:600; margin-bottom:5px; }
+  .form-group input, .form-group select, .form-group textarea {
+    width:100%; padding:9px 12px; border:1px solid var(--border); border-radius:7px;
+    font-size:14px; font-family:inherit; color:var(--text); background:#fff;
+  }
+  .form-group textarea { resize:vertical; min-height:70px; }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    outline:none; border-color:var(--primary-light); box-shadow:0 0 0 3px rgba(58,124,165,.15);
+  }
+  .detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px 24px; }
+  .detail-grid .field label { font-size:12px; color:var(--text-light); text-transform:uppercase; letter-spacing:.4px; }
+  .detail-grid .field p { font-size:15px; margin-top:2px; }
+  .actions-cell { display:flex; gap:6px; }
+
+  .toast-container { position:fixed; top:20px; right:20px; z-index:300; display:flex; flex-direction:column; gap:8px; }
+  .toast { padding:12px 20px; border-radius:8px; color:#fff; font-size:13px; font-weight:500; box-shadow:var(--shadow-md); animation:slideIn .25s ease-out; }
+  .toast-success { background:var(--success); }
+  .toast-error { background:var(--danger); }
+  @keyframes slideIn { from{transform:translateX(80px);opacity:0}to{transform:translateX(0);opacity:1} }
+
+  .loading-spinner {
+    display:inline-block; width:18px; height:18px; border:2px solid rgba(255,255,255,.3);
+    border-top-color:#fff; border-radius:50%; animation:spin .6s linear infinite;
+  }
+  @keyframes spin { to{transform:rotate(360deg)} }
+
+  @media(max-width:800px){
+    .sidebar { width:60px; }
+    .sidebar .logo h1,.sidebar .logo p,.sidebar nav button span,.sidebar .sidebar-footer .user-name,.sidebar .sidebar-footer button span { display:none; }
+    .sidebar nav button { justify-content:center; padding:14px 0; }
+    .main-area { margin-left:60px; }
+    .content { padding:16px; }
+    .topbar { padding:12px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== LOGIN SCREEN ==================== -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-box">
+    <h1>Dove Recovery</h1>
+    <p class="subtitle">Referral Management CRM</p>
+    <div class="tabs">
+      <button class="active" onclick="switchAuthTab('login')">Sign In</button>
+      <button onclick="switchAuthTab('signup')">Create Account</button>
+    </div>
+
+    <!-- Login Form -->
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="loginEmail" required placeholder="you@doverecovery.com"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="loginPassword" required placeholder="Enter your password"/>
+      </div>
+      <button type="submit" class="btn-login" id="loginBtn">Sign In</button>
+      <p class="error-msg" id="loginError"></p>
+    </form>
+
+    <!-- Signup Form -->
+    <form id="signupForm" style="display:none" onsubmit="handleSignup(event)">
+      <div class="name-row">
+        <div class="form-group">
+          <label>First Name</label>
+          <input type="text" id="signupFirst" required placeholder="First"/>
+        </div>
+        <div class="form-group">
+          <label>Last Name</label>
+          <input type="text" id="signupLast" required placeholder="Last"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="signupEmail" required placeholder="you@doverecovery.com"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="signupPassword" required minlength="6" placeholder="At least 6 characters"/>
+      </div>
+      <button type="submit" class="btn-login" id="signupBtn">Create Account</button>
+      <p class="error-msg" id="signupError"></p>
+    </form>
+  </div>
+</div>
+
+<!-- ==================== MAIN APP ==================== -->
+<div id="appScreen" class="app-wrap" style="display:none">
+  <aside class="sidebar">
+    <div class="logo">
+      <h1>Dove Recovery</h1>
+      <p>Referral CRM</p>
+    </div>
+    <nav id="sidebarNav">
+      <button class="active" onclick="showPage('dashboard')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Dashboard</span>
+      </button>
+      <button onclick="showPage('inbound')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+        <span>Inbound</span>
+      </button>
+      <button onclick="showPage('outbound')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+        <span>Outbound</span>
+      </button>
+      <button onclick="showPage('team')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        <span>Team</span>
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-name" id="sidebarUserName"></div>
+      <button onclick="handleLogout()"><span>Sign Out</span></button>
+    </div>
+  </aside>
+  <div class="main-area">
+    <div class="topbar">
+      <h2 id="pageTitle">Dashboard</h2>
+      <div id="topActions"></div>
+    </div>
+    <div class="content" id="pageContent"></div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header"><h3 id="modalTitle"></h3><button onclick="closeModal()">&times;</button></div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer" id="modalFooter"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-container" id="toasts"></div>
+
+<script>
+// ============================================================
+// CONFIGURATION — Replace these with your Supabase project values
+// ============================================================
+const SUPABASE_URL  = 'sb_publishable_B3nIU_DacM2u_kbscJatgA_TANmoaW5';   // e.g. https://abcdefg.supabase.co
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhoa2dhemxtdWRmd2ZuanF3Z3FvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2OTQ5OTIsImV4cCI6MjA5NDI3MDk5Mn0.wxcHpFlRSy2u51RNvF5Hd8hv2sIkYet98L_PR6CgsDc'; // The "anon / public" key
+// ============================================================
+
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentUser = null;
+let currentProfile = null;
+let profiles = [];
+let inboundData = [];
+let outboundData = [];
+let currentPage = 'dashboard';
+let sortCol = 'created_at';
+let sortDir = 'desc';
+let searchText = '';
+
+// ===================== AUTH =====================
+function switchAuthTab(tab) {
+  document.querySelectorAll('.login-box .tabs button').forEach(b => b.classList.remove('active'));
+  if (tab === 'login') {
+    document.querySelector('.login-box .tabs button:first-child').classList.add('active');
+    document.getElementById('loginForm').style.display = '';
+    document.getElementById('signupForm').style.display = 'none';
+  } else {
+    document.querySelector('.login-box .tabs button:last-child').classList.add('active');
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('signupForm').style.display = '';
+  }
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  const btn = document.getElementById('loginBtn');
+  const err = document.getElementById('loginError');
+  btn.disabled = true; btn.innerHTML = '<span class="loading-spinner"></span>';
+  err.style.display = 'none';
+
+  const { data, error } = await sb.auth.signInWithPassword({
+    email: document.getElementById('loginEmail').value.trim(),
+    password: document.getElementById('loginPassword').value
+  });
+
+  btn.disabled = false; btn.textContent = 'Sign In';
+  if (error) { err.textContent = error.message; err.style.display = 'block'; return; }
+  await initApp(data.user);
+}
+
+async function handleSignup(e) {
+  e.preventDefault();
+  const btn = document.getElementById('signupBtn');
+  const err = document.getElementById('signupError');
+  btn.disabled = true; btn.innerHTML = '<span class="loading-spinner"></span>';
+  err.style.display = 'none';
+
+  const firstName = document.getElementById('signupFirst').value.trim();
+  const lastName = document.getElementById('signupLast').value.trim();
+
+  const { data, error } = await sb.auth.signUp({
+    email: document.getElementById('signupEmail').value.trim(),
+    password: document.getElementById('signupPassword').value,
+    options: { data: { first_name: firstName, last_name: lastName } }
+  });
+
+  btn.disabled = false; btn.textContent = 'Create Account';
+  if (error) { err.textContent = error.message; err.style.display = 'block'; return; }
+
+  if (data.user && !data.session) {
+    err.textContent = 'Check your email for a confirmation link, then sign in.';
+    err.style.display = 'block';
+    err.style.color = 'var(--success)';
+    return;
+  }
+  await initApp(data.user);
+}
+
+async function handleLogout() {
+  await sb.auth.signOut();
+  currentUser = null; currentProfile = null;
+  document.getElementById('appScreen').style.display = 'none';
+  document.getElementById('loginScreen').style.display = '';
+}
+
+// ===================== APP INIT =====================
+async function initApp(user) {
+  currentUser = user;
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appScreen').style.display = 'flex';
+
+  // Load profile
+  const { data: prof } = await sb.from('profiles').select('*').eq('id', user.id).single();
+  currentProfile = prof;
+  document.getElementById('sidebarUserName').textContent =
+    (prof?.first_name || '') + ' ' + (prof?.last_name || '') || user.email;
+
+  await loadAllData();
+  showPage('dashboard');
+}
+
+async function loadAllData() {
+  const [p, i, o] = await Promise.all([
+    sb.from('profiles').select('*').order('created_at'),
+    sb.from('inbound_referrals').select('*, profiles:created_by(first_name, last_name)').order('created_at', { ascending: false }),
+    sb.from('outbound_referrals').select('*, profiles:created_by(first_name, last_name)').order('created_at', { ascending: false })
+  ]);
+  profiles = p.data || [];
+  inboundData = (i.data || []).map(r => ({
+    ...r,
+    created_by_name: r.profiles ? r.profiles.first_name + ' ' + r.profiles.last_name : '—'
+  }));
+  outboundData = (o.data || []).map(r => ({
+    ...r,
+    created_by_name: r.profiles ? r.profiles.first_name + ' ' + r.profiles.last_name : '—'
+  }));
+}
+
+// Check existing session on load
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session?.user) await initApp(session.user);
+})();
+
+// ===================== NAVIGATION =====================
+function showPage(page) {
+  currentPage = page;
+  searchText = '';
+  const pages = ['dashboard','inbound','outbound','team'];
+  document.querySelectorAll('#sidebarNav button').forEach((btn, i) => {
+    btn.classList.toggle('active', pages[i] === page);
+  });
+  const titles = { dashboard:'Dashboard', inbound:'Inbound Referrals', outbound:'Outbound Referrals', team:'Team Members' };
+  document.getElementById('pageTitle').textContent = titles[page];
+  renderPage();
+}
+
+function renderPage() {
+  const c = document.getElementById('pageContent');
+  const a = document.getElementById('topActions');
+  a.innerHTML = '';
+  if (currentPage === 'dashboard') renderDashboard(c);
+  else if (currentPage === 'inbound') renderReferrals(c, a, 'inbound');
+  else if (currentPage === 'outbound') renderReferrals(c, a, 'outbound');
+  else if (currentPage === 'team') renderTeam(c, a);
+}
+
+// ===================== DASHBOARD =====================
+function renderDashboard(c) {
+  const today = new Date().toISOString().slice(0,10);
+  const inToday = inboundData.filter(r => r.created_at?.slice(0,10) === today).length;
+  const outToday = outboundData.filter(r => r.created_at?.slice(0,10) === today).length;
+
+  c.innerHTML = `
+    <div class="stats-row">
+      <div class="stat-card inbound"><h3>Total Inbound</h3><div class="num">${inboundData.length}</div></div>
+      <div class="stat-card outbound"><h3>Total Outbound</h3><div class="num">${outboundData.length}</div></div>
+      <div class="stat-card inbound"><h3>Inbound Today</h3><div class="num">${inToday}</div></div>
+      <div class="stat-card outbound"><h3>Outbound Today</h3><div class="num">${outToday}</div></div>
+      <div class="stat-card users"><h3>Team Members</h3><div class="num">${profiles.length}</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div class="table-card">
+        <div class="table-toolbar"><strong>Recent Inbound</strong></div>
+        <table>
+          <thead><tr><th>Name</th><th>Source</th><th>Date</th></tr></thead>
+          <tbody>${inboundData.slice(0,5).map(r => `<tr>
+            <td>${esc(r.first_name)} ${esc(r.last_name)}</td>
+            <td>${esc(r.referral_source)}</td>
+            <td>${fmtDate(r.created_at)}</td>
+          </tr>`).join('') || '<tr><td colspan="3" style="text-align:center;color:var(--text-light);padding:24px;">No inbound referrals yet</td></tr>'}</tbody>
+        </table>
+      </div>
+      <div class="table-card">
+        <div class="table-toolbar"><strong>Recent Outbound</strong></div>
+        <table>
+          <thead><tr><th>Name</th><th>Referred To</th><th>Date</th></tr></thead>
+          <tbody>${outboundData.slice(0,5).map(r => `<tr>
+            <td>${esc(r.first_name)} ${esc(r.last_name)}</td>
+            <td>${esc(r.referred_to)}</td>
+            <td>${fmtDate(r.created_at)}</td>
+          </tr>`).join('') || '<tr><td colspan="3" style="text-align:center;color:var(--text-light);padding:24px;">No outbound referrals yet</td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+// ===================== REFERRALS TABLE =====================
+function renderReferrals(c, a, type) {
+  const isOut = type === 'outbound';
+  const label = isOut ? 'Outbound' : 'Inbound';
+  const data = isOut ? outboundData : inboundData;
+
+  a.innerHTML = `
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-outline btn-sm" onclick="exportCSV('${type}')">Export CSV</button>
+      <button class="btn ${isOut?'btn-accent':'btn-primary'} btn-sm" onclick="openReferralModal('${type}')">+ New ${label}</button>
+    </div>`;
+
+  let filtered = data.filter(r => {
+    if (!searchText) return true;
+    const s = searchText.toLowerCase();
+    return (r.first_name+' '+r.last_name).toLowerCase().includes(s)
+      || (r.referral_source||'').toLowerCase().includes(s)
+      || (r.referred_to||'').toLowerCase().includes(s)
+      || (r.reason||'').toLowerCase().includes(s)
+      || (r.created_by_name||'').toLowerCase().includes(s);
+  });
+
+  filtered.sort((a,b) => {
+    let va = a[sortCol]||'', vb = b[sortCol]||'';
+    if (sortCol==='created_at') { va=new Date(va); vb=new Date(vb); }
+    else { va=String(va).toLowerCase(); vb=String(vb).toLowerCase(); }
+    if (va<vb) return sortDir==='asc'?-1:1;
+    if (va>vb) return sortDir==='asc'?1:-1;
+    return 0;
+  });
+
+  const arrow = col => sortCol===col?(sortDir==='asc'?'&#9650;':'&#9660;'):'';
+
+  c.innerHTML = `
+    <div class="table-card">
+      <div class="table-toolbar">
+        <input type="text" placeholder="Search referrals..." value="${esc(searchText)}" oninput="searchText=this.value;renderPage()"/>
+        <span style="font-size:13px;color:var(--text-light)">${filtered.length} referral${filtered.length!==1?'s':''}</span>
+        <div class="spacer"></div>
+      </div>
+      <table>
+        <thead><tr>
+          <th onclick="toggleSort('first_name')">Name ${arrow('first_name')}</th>
+          <th onclick="toggleSort('created_at')">Date / Time ${arrow('created_at')}</th>
+          ${isOut
+            ? `<th onclick="toggleSort('referred_to')">Referred To ${arrow('referred_to')}</th>
+               <th onclick="toggleSort('reason')">Reason ${arrow('reason')}</th>`
+            : `<th onclick="toggleSort('referral_source')">Source ${arrow('referral_source')}</th>`}
+          <th onclick="toggleSort('created_by_name')">Created By ${arrow('created_by_name')}</th>
+          <th>Actions</th>
+        </tr></thead>
+        <tbody>
+          ${filtered.length ? filtered.map(r => `<tr>
+            <td><strong>${esc(r.first_name)} ${esc(r.last_name)}</strong></td>
+            <td>${fmtDate(r.created_at)}</td>
+            ${isOut
+              ? `<td>${esc(r.referred_to)}</td><td>${esc(r.reason||'—')}</td>`
+              : `<td>${esc(r.referral_source)}</td>`}
+            <td>${esc(r.created_by_name)}</td>
+            <td class="actions-cell">
+              <button class="btn btn-outline btn-sm" onclick="viewReferral('${type}',${r.id})">View</button>
+              <button class="btn btn-outline btn-sm" onclick="openReferralModal('${type}',${r.id})">Edit</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteReferral('${type}',${r.id})">Del</button>
+            </td>
+          </tr>`).join('')
+          : `<tr><td colspan="${isOut?6:5}" class="empty-state"><p>No ${label.toLowerCase()} referrals yet. Click "+ New" to add one.</p></td></tr>`}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function toggleSort(col) {
+  if (sortCol===col) sortDir = sortDir==='asc'?'desc':'asc';
+  else { sortCol=col; sortDir='asc'; }
+  renderPage();
+}
+
+// ===================== REFERRAL MODAL =====================
+function profileOptions() {
+  return profiles.map(p => `<option value="${p.id}">${esc(p.first_name)} ${esc(p.last_name)}</option>`).join('');
+}
+
+function openReferralModal(type, id) {
+  const isOut = type==='outbound';
+  const editing = id!=null;
+  const data = isOut ? outboundData : inboundData;
+  const ref = editing ? data.find(r=>r.id===id) : null;
+
+  const body = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 16px;">
+      <div class="form-group"><label>First Name *</label><input id="rf_fn" value="${ref?esc(ref.first_name):''}" required/></div>
+      <div class="form-group"><label>Last Name *</label><input id="rf_ln" value="${ref?esc(ref.last_name):''}" required/></div>
+    </div>
+    <div class="form-group">
+      <label>${isOut?'Referred To':'Referral Source'} *</label>
+      <input id="rf_src" value="${ref?esc(isOut?ref.referred_to:ref.referral_source):''}" placeholder="${isOut?'Where are they being referred?':'Where did this referral come from?'}"/>
+    </div>
+    ${isOut?`<div class="form-group">
+      <label>Reason for Referral</label>
+      <textarea id="rf_reason" placeholder="e.g. relapse, drug of choice, level of care...">${ref?esc(ref.reason):''}</textarea>
+    </div>`:''}
+    <div class="form-group">
+      <label>Created By *</label>
+      <select id="rf_by"><option value="">— Select team member —</option>${profileOptions()}</select>
+    </div>`;
+
+  openModal(
+    (editing?'Edit ':'New ')+(isOut?'Outbound':'Inbound')+' Referral', body,
+    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+     <button class="btn btn-primary" id="saveRefBtn" onclick="saveReferral('${type}',${id||'null'})">${editing?'Save Changes':'Add Referral'}</button>`
+  );
+  if (ref) document.getElementById('rf_by').value = ref.created_by||'';
+}
+
+async function saveReferral(type, id) {
+  const isOut = type==='outbound';
+  const fn = document.getElementById('rf_fn').value.trim();
+  const ln = document.getElementById('rf_ln').value.trim();
+  const src = document.getElementById('rf_src').value.trim();
+  const byId = document.getElementById('rf_by').value;
+  const reason = isOut?(document.getElementById('rf_reason')?.value.trim()||''):'';
+
+  if (!fn||!ln||!src||!byId) { toast('Please fill all required fields','error'); return; }
+
+  const btn = document.getElementById('saveRefBtn');
+  btn.disabled=true; btn.innerHTML='<span class="loading-spinner"></span>';
+
+  const table = isOut ? 'outbound_referrals' : 'inbound_referrals';
+  let record = { first_name:fn, last_name:ln, created_by:byId };
+  if (isOut) { record.referred_to=src; record.reason=reason; }
+  else { record.referral_source=src; }
+
+  let error;
+  if (id!=null) {
+    ({ error } = await sb.from(table).update(record).eq('id',id));
+  } else {
+    ({ error } = await sb.from(table).insert(record));
+  }
+
+  if (error) { toast(error.message,'error'); btn.disabled=false; btn.textContent='Retry'; return; }
+
+  await loadAllData();
+  closeModal();
+  toast(id!=null?'Referral updated':'Referral added');
+  renderPage();
+}
+
+function viewReferral(type, id) {
+  const isOut = type==='outbound';
+  const data = isOut?outboundData:inboundData;
+  const r = data.find(x=>x.id===id);
+  if (!r) return;
+  const body = `<div class="detail-grid">
+    <div class="field"><label>First Name</label><p>${esc(r.first_name)}</p></div>
+    <div class="field"><label>Last Name</label><p>${esc(r.last_name)}</p></div>
+    <div class="field"><label>Created</label><p>${fmtDate(r.created_at)}</p></div>
+    <div class="field"><label>Created By</label><p>${esc(r.created_by_name)}</p></div>
+    ${isOut?`<div class="field"><label>Referred To</label><p>${esc(r.referred_to)}</p></div>
+    <div class="field"><label>Reason</label><p>${esc(r.reason||'—')}</p></div>`
+    :`<div class="field"><label>Referral Source</label><p>${esc(r.referral_source)}</p></div>`}
+  </div>`;
+  openModal((isOut?'Outbound':'Inbound')+' Referral Details',body,
+    `<button class="btn btn-outline" onclick="closeModal()">Close</button>
+     <button class="btn btn-primary" onclick="closeModal();openReferralModal('${type}',${id})">Edit</button>`);
+}
+
+async function deleteReferral(type, id) {
+  if (!confirm('Delete this referral? This cannot be undone.')) return;
+  const table = type==='outbound'?'outbound_referrals':'inbound_referrals';
+  const { error } = await sb.from(table).delete().eq('id',id);
+  if (error) { toast(error.message,'error'); return; }
+  await loadAllData();
+  toast('Referral deleted');
+  renderPage();
+}
+
+// ===================== TEAM =====================
+function renderTeam(c, a) {
+  a.innerHTML = `<button class="btn btn-primary btn-sm" onclick="openInviteModal()">+ Invite Team Member</button>`;
+  c.innerHTML = `
+    <div class="table-card">
+      <table>
+        <thead><tr><th>Name</th><th>Role</th><th>Email</th><th>Joined</th><th>Actions</th></tr></thead>
+        <tbody>
+          ${profiles.length?profiles.map(p=>`<tr>
+            <td><strong>${esc(p.first_name)} ${esc(p.last_name)}</strong></td>
+            <td>${esc(p.role||'—')}</td>
+            <td>${esc(getUserEmail(p.id))}</td>
+            <td>${fmtDate(p.created_at)}</td>
+            <td class="actions-cell">
+              ${p.id===currentUser.id?`<button class="btn btn-outline btn-sm" onclick="openEditProfileModal('${p.id}')">Edit</button>`:'<span style="color:var(--text-light);font-size:12px">—</span>'}
+            </td>
+          </tr>`).join('')
+          :'<tr><td colspan="5" class="empty-state"><p>No team members yet.</p></td></tr>'}
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:16px;padding:16px 20px;background:var(--card);border-radius:10px;box-shadow:var(--shadow);">
+      <p style="font-size:13px;color:var(--text-light);">To add team members, click "Invite Team Member" above. They'll receive a link to create their account. Each person who signs up automatically appears here.</p>
+    </div>`;
+}
+
+function getUserEmail(uid) {
+  // Current user's email is available; others we may not have
+  if (uid === currentUser?.id) return currentUser.email || '';
+  return '—';
+}
+
+function openInviteModal() {
+  const body = `
+    <p style="margin-bottom:16px;color:var(--text-light);font-size:14px;">Share this page's URL with your team members. When they visit and click "Create Account," they'll automatically be added to your CRM.</p>
+    <div class="form-group">
+      <label>Share this link</label>
+      <input type="text" id="shareLink" value="${window.location.href}" readonly onclick="this.select()"/>
+    </div>
+    <p style="font-size:12px;color:var(--text-light);">Tip: If you want to restrict signups, you can configure allowed email domains in your Supabase dashboard under Authentication &gt; Providers.</p>`;
+  openModal('Invite Team Member',body,
+    `<button class="btn btn-outline" onclick="closeModal()">Close</button>
+     <button class="btn btn-primary" onclick="navigator.clipboard.writeText(document.getElementById('shareLink').value);toast('Link copied!')">Copy Link</button>`);
+}
+
+function openEditProfileModal(uid) {
+  const p = profiles.find(x=>x.id===uid);
+  if (!p) return;
+  const body = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 16px;">
+      <div class="form-group"><label>First Name</label><input id="ep_fn" value="${esc(p.first_name)}"/></div>
+      <div class="form-group"><label>Last Name</label><input id="ep_ln" value="${esc(p.last_name)}"/></div>
+    </div>
+    <div class="form-group"><label>Role</label><input id="ep_role" value="${esc(p.role||'')}" placeholder="e.g. Intake Coordinator, Counselor..."/></div>`;
+  openModal('Edit Your Profile',body,
+    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+     <button class="btn btn-primary" id="saveProfileBtn" onclick="saveProfile('${uid}')">Save</button>`);
+}
+
+async function saveProfile(uid) {
+  const fn = document.getElementById('ep_fn').value.trim();
+  const ln = document.getElementById('ep_ln').value.trim();
+  const role = document.getElementById('ep_role').value.trim();
+  if (!fn||!ln) { toast('Name is required','error'); return; }
+  const btn = document.getElementById('saveProfileBtn');
+  btn.disabled=true;
+  const { error } = await sb.from('profiles').update({first_name:fn,last_name:ln,role}).eq('id',uid);
+  if (error) { toast(error.message,'error'); btn.disabled=false; return; }
+  await loadAllData();
+  document.getElementById('sidebarUserName').textContent = fn+' '+ln;
+  closeModal(); toast('Profile updated'); renderPage();
+}
+
+// ===================== CSV EXPORT =====================
+function exportCSV(type) {
+  const isOut = type==='outbound';
+  const data = isOut?outboundData:inboundData;
+  let headers = ['First Name','Last Name','Created Date','Created By'];
+  if (isOut) headers.splice(2,0,'Referred To','Reason');
+  else headers.splice(2,0,'Referral Source');
+
+  let rows = [headers.join(',')];
+  data.forEach(r => {
+    let row = [r.first_name, r.last_name];
+    if (isOut) { row.push(r.referred_to, r.reason||''); }
+    else { row.push(r.referral_source); }
+    row.push(r.created_at, r.created_by_name||'');
+    rows.push(row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(','));
+  });
+  const blob = new Blob([rows.join('\n')],{type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download=type+'_referrals_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click(); URL.revokeObjectURL(url);
+  toast('CSV exported');
+}
+
+// ===================== UTILITIES =====================
+function openModal(title,bodyHtml,footerHtml) {
+  document.getElementById('modalTitle').textContent=title;
+  document.getElementById('modalBody').innerHTML=bodyHtml;
+  document.getElementById('modalFooter').innerHTML=footerHtml;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+document.getElementById('modalOverlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal()});
+
+function toast(msg,type='success') {
+  const el=document.createElement('div');
+  el.className='toast toast-'+type;
+  el.textContent=msg;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(()=>el.remove(),3000);
+}
+function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+function fmtDate(iso){
+  if(!iso)return'—';
+  const d=new Date(iso);
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
+    +' '+d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+}
+</script>
+</body>
+</html>
