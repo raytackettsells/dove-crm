@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dove Recovery — Referral CRM</title>
+<title>Dove &amp; Robin Recovery — Referral CRM</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
@@ -175,6 +175,10 @@
   }
   @keyframes spin { to{transform:rotate(360deg)} }
 
+  /* ---- Add New Source inline ---- */
+  .add-new-row { display:flex; gap:8px; margin-top:8px; }
+  .add-new-row input { flex:1; }
+
   @media(max-width:800px){
     .sidebar { width:60px; }
     .sidebar .logo h1,.sidebar .logo p,.sidebar nav button span,.sidebar .sidebar-footer .user-name,.sidebar .sidebar-footer button span { display:none; }
@@ -190,7 +194,7 @@
 <!-- ==================== LOGIN SCREEN ==================== -->
 <div id="loginScreen" class="login-screen">
   <div class="login-box">
-    <h1>Dove Recovery</h1>
+    <h1>Dove &amp; Robin Recovery</h1>
     <p class="subtitle">Referral Management CRM</p>
     <div class="tabs">
       <button class="active" onclick="switchAuthTab('login')">Sign In</button>
@@ -241,7 +245,7 @@
 <div id="appScreen" class="app-wrap" style="display:none">
   <aside class="sidebar">
     <div class="logo">
-      <h1>Dove Recovery</h1>
+      <h1>Dove &amp; Robin Recovery</h1>
       <p>Referral CRM</p>
     </div>
     <nav id="sidebarNav">
@@ -292,18 +296,22 @@
 // ============================================================
 // CONFIGURATION — Replace these with your Supabase project values
 // ============================================================
-const SUPABASE_URL  = 'https://xhkgazlmudfwfnjqwgqo.supabase.co';   // e.g. https://abcdefg.supabase.co
-const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhoa2dhemxtdWRmd2ZuanF3Z3FvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2OTQ5OTIsImV4cCI6MjA5NDI3MDk5Mn0.wxcHpFlRSy2u51RNvF5Hd8hv2sIkYet98L_PR6CgsDc'; // The "anon / public" key
+const SUPABASE_URL  = 'https://xhkgazlmudfwfnjqwgqo.supabase.co';
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhoa2dhemxtdWRmd2ZuanF3Z3FvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2OTQ5OTIsImV4cCI6MjA5NDI3MDk5Mn0.wxcHpFlRSy2u51RNvF5Hd8hv2sIkYet98L_PR6CgsDc';
 // ============================================================
 
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Role options
+const ROLES = ['Admissions Coordinator', 'Business Development', 'Manager'];
 
 let currentUser = null;
 let currentProfile = null;
 let profiles = [];
 let inboundData = [];
 let outboundData = [];
+let referralSources = [];
 let currentPage = 'dashboard';
 let sortCol = 'created_at';
 let sortDir = 'desc';
@@ -381,7 +389,6 @@ async function initApp(user) {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('appScreen').style.display = 'flex';
 
-  // Load profile
   const { data: prof } = await sb.from('profiles').select('*').eq('id', user.id).single();
   currentProfile = prof;
   document.getElementById('sidebarUserName').textContent =
@@ -392,12 +399,14 @@ async function initApp(user) {
 }
 
 async function loadAllData() {
-  const [p, i, o] = await Promise.all([
+  const [p, i, o, s] = await Promise.all([
     sb.from('profiles').select('*').order('created_at'),
     sb.from('inbound_referrals').select('*, profiles:created_by(first_name, last_name)').order('created_at', { ascending: false }),
-    sb.from('outbound_referrals').select('*, profiles:created_by(first_name, last_name)').order('created_at', { ascending: false })
+    sb.from('outbound_referrals').select('*, profiles:created_by(first_name, last_name)').order('created_at', { ascending: false }),
+    sb.from('referral_sources').select('*').order('name')
   ]);
   profiles = p.data || [];
+  referralSources = (s.data || []).map(x => x.name);
   inboundData = (i.data || []).map(r => ({
     ...r,
     created_by_name: r.profiles ? r.profiles.first_name + ' ' + r.profiles.last_name : '—'
@@ -555,6 +564,52 @@ function toggleSort(col) {
   renderPage();
 }
 
+// ===================== REFERRAL SOURCE DROPDOWN =====================
+function sourceOptions(selectedValue) {
+  let opts = '<option value="">— Select —</option>';
+  referralSources.forEach(name => {
+    const sel = name === selectedValue ? ' selected' : '';
+    opts += `<option value="${esc(name)}"${sel}>${esc(name)}</option>`;
+  });
+  opts += '<option value="__ADD_NEW__">+ Add New Source...</option>';
+  return opts;
+}
+
+function handleSourceChange(selectEl) {
+  const addNewRow = document.getElementById('addNewSourceRow');
+  if (selectEl.value === '__ADD_NEW__') {
+    addNewRow.style.display = 'flex';
+    document.getElementById('newSourceInput').focus();
+  } else {
+    addNewRow.style.display = 'none';
+  }
+}
+
+async function addNewSource() {
+  const input = document.getElementById('newSourceInput');
+  const name = input.value.trim();
+  if (!name) { toast('Please enter a source name', 'error'); return; }
+
+  // Check if it already exists
+  if (referralSources.some(s => s.toLowerCase() === name.toLowerCase())) {
+    toast('That source already exists', 'error');
+    return;
+  }
+
+  const { error } = await sb.from('referral_sources').insert({ name });
+  if (error) { toast(error.message, 'error'); return; }
+
+  // Reload sources and update dropdown
+  const { data } = await sb.from('referral_sources').select('*').order('name');
+  referralSources = (data || []).map(x => x.name);
+
+  const select = document.getElementById('rf_src');
+  select.innerHTML = sourceOptions(name);
+  select.value = name;
+  document.getElementById('addNewSourceRow').style.display = 'none';
+  toast('Source "' + name + '" added');
+}
+
 // ===================== REFERRAL MODAL =====================
 function profileOptions() {
   return profiles.map(p => `<option value="${p.id}">${esc(p.first_name)} ${esc(p.last_name)}</option>`).join('');
@@ -566,6 +621,8 @@ function openReferralModal(type, id) {
   const data = isOut ? outboundData : inboundData;
   const ref = editing ? data.find(r=>r.id===id) : null;
 
+  const currentSourceValue = ref ? (isOut ? ref.referred_to : ref.referral_source) : '';
+
   const body = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 16px;">
       <div class="form-group"><label>First Name *</label><input id="rf_fn" value="${ref?esc(ref.first_name):''}" required/></div>
@@ -573,7 +630,13 @@ function openReferralModal(type, id) {
     </div>
     <div class="form-group">
       <label>${isOut?'Referred To':'Referral Source'} *</label>
-      <input id="rf_src" value="${ref?esc(isOut?ref.referred_to:ref.referral_source):''}" placeholder="${isOut?'Where are they being referred?':'Where did this referral come from?'}"/>
+      <select id="rf_src" onchange="handleSourceChange(this)">
+        ${sourceOptions(currentSourceValue)}
+      </select>
+      <div class="add-new-row" id="addNewSourceRow" style="display:none;">
+        <input type="text" id="newSourceInput" placeholder="Enter new source name..." onkeydown="if(event.key==='Enter'){event.preventDefault();addNewSource();}"/>
+        <button class="btn btn-primary btn-sm" onclick="addNewSource()">Add</button>
+      </div>
     </div>
     ${isOut?`<div class="form-group">
       <label>Reason for Referral</label>
@@ -596,7 +659,8 @@ async function saveReferral(type, id) {
   const isOut = type==='outbound';
   const fn = document.getElementById('rf_fn').value.trim();
   const ln = document.getElementById('rf_ln').value.trim();
-  const src = document.getElementById('rf_src').value.trim();
+  const srcSelect = document.getElementById('rf_src');
+  const src = srcSelect.value === '__ADD_NEW__' ? '' : srcSelect.value;
   const byId = document.getElementById('rf_by').value;
   const reason = isOut?(document.getElementById('rf_reason')?.value.trim()||''):'';
 
@@ -681,7 +745,6 @@ function renderTeam(c, a) {
 }
 
 function getUserEmail(uid) {
-  // Current user's email is available; others we may not have
   if (uid === currentUser?.id) return currentUser.email || '';
   return '—';
 }
@@ -693,7 +756,7 @@ function openInviteModal() {
       <label>Share this link</label>
       <input type="text" id="shareLink" value="${window.location.href}" readonly onclick="this.select()"/>
     </div>
-    <p style="font-size:12px;color:var(--text-light);">Tip: If you want to restrict signups, you can configure allowed email domains in your Supabase dashboard under Authentication &gt; Providers.</p>`;
+    <p style="font-size:12px;color:var(--text-light);">Only @doverecovery.com and @robinrecovery.com emails can sign up.</p>`;
   openModal('Invite Team Member',body,
     `<button class="btn btn-outline" onclick="closeModal()">Close</button>
      <button class="btn btn-primary" onclick="navigator.clipboard.writeText(document.getElementById('shareLink').value);toast('Link copied!')">Copy Link</button>`);
@@ -702,12 +765,19 @@ function openInviteModal() {
 function openEditProfileModal(uid) {
   const p = profiles.find(x=>x.id===uid);
   if (!p) return;
+  const roleOpts = ROLES.map(r => `<option value="${esc(r)}"${p.role===r?' selected':''}>${esc(r)}</option>`).join('');
   const body = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 16px;">
       <div class="form-group"><label>First Name</label><input id="ep_fn" value="${esc(p.first_name)}"/></div>
       <div class="form-group"><label>Last Name</label><input id="ep_ln" value="${esc(p.last_name)}"/></div>
     </div>
-    <div class="form-group"><label>Role</label><input id="ep_role" value="${esc(p.role||'')}" placeholder="e.g. Intake Coordinator, Counselor..."/></div>`;
+    <div class="form-group">
+      <label>Role</label>
+      <select id="ep_role">
+        <option value="">— Select Role —</option>
+        ${roleOpts}
+      </select>
+    </div>`;
   openModal('Edit Your Profile',body,
     `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
      <button class="btn btn-primary" id="saveProfileBtn" onclick="saveProfile('${uid}')">Save</button>`);
@@ -716,7 +786,7 @@ function openEditProfileModal(uid) {
 async function saveProfile(uid) {
   const fn = document.getElementById('ep_fn').value.trim();
   const ln = document.getElementById('ep_ln').value.trim();
-  const role = document.getElementById('ep_role').value.trim();
+  const role = document.getElementById('ep_role').value;
   if (!fn||!ln) { toast('Name is required','error'); return; }
   const btn = document.getElementById('saveProfileBtn');
   btn.disabled=true;
