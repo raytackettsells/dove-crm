@@ -305,6 +305,8 @@ const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Role options
 const ROLES = ['Admissions Coordinator', 'Business Development', 'Manager'];
+// Inbound referral type options
+const REFERRAL_TYPES = ['New Referral', 'Alumni', 'Detox Return'];
 
 let currentUser = null;
 let currentProfile = null;
@@ -681,7 +683,8 @@ function renderReferrals(c, a, type) {
           ${isOut
             ? `<th onclick="toggleSort('referred_to')">Referred To ${arrow('referred_to')}</th>
                <th onclick="toggleSort('reason')">Reason ${arrow('reason')}</th>`
-            : `<th onclick="toggleSort('referral_source')">Source ${arrow('referral_source')}</th>`}
+            : `<th onclick="toggleSort('referral_source')">Source ${arrow('referral_source')}</th>
+               <th onclick="toggleSort('referral_type')">Type ${arrow('referral_type')}</th>`}
           <th onclick="toggleSort('created_by_name')">Created By ${arrow('created_by_name')}</th>
           <th>Actions</th>
         </tr></thead>
@@ -691,7 +694,7 @@ function renderReferrals(c, a, type) {
             <td>${fmtDate(r.created_at)}</td>
             ${isOut
               ? `<td>${esc(r.referred_to)}</td><td>${esc(r.reason||'—')}</td>`
-              : `<td>${esc(r.referral_source)}</td>`}
+              : `<td>${esc(r.referral_source)}</td><td>${esc(r.referral_type||'—')}</td>`}
             <td>${esc(r.created_by_name)}</td>
             <td class="actions-cell">
               <button class="btn btn-outline btn-sm" onclick="viewReferral('${type}',${r.id})">View</button>
@@ -788,7 +791,13 @@ function openReferralModal(type, id) {
     ${isOut?`<div class="form-group">
       <label>Reason for Referral</label>
       <textarea id="rf_reason" placeholder="e.g. relapse, drug of choice, level of care...">${ref?esc(ref.reason):''}</textarea>
-    </div>`:''}
+    </div>`:`<div class="form-group">
+      <label>Referral Type *</label>
+      <select id="rf_type">
+        <option value="">— Select Type —</option>
+        ${REFERRAL_TYPES.map(t => '<option value="'+t+'"'+(ref&&ref.referral_type===t?' selected':'')+'>'+t+'</option>').join('')}
+      </select>
+    </div>`}
     <div class="form-group">
       <label>Created By *</label>
       <select id="rf_by"><option value="">— Select team member —</option>${profileOptions()}</select>
@@ -810,8 +819,10 @@ async function saveReferral(type, id) {
   const src = srcSelect.value === '__ADD_NEW__' ? '' : srcSelect.value;
   const byId = document.getElementById('rf_by').value;
   const reason = isOut?(document.getElementById('rf_reason')?.value.trim()||''):'';
+  const refType = !isOut?(document.getElementById('rf_type')?.value||''):'';
 
   if (!fn||!ln||!src||!byId) { toast('Please fill all required fields','error'); return; }
+  if (!isOut&&!refType) { toast('Please select a Referral Type','error'); return; }
 
   const btn = document.getElementById('saveRefBtn');
   btn.disabled=true; btn.innerHTML='<span class="loading-spinner"></span>';
@@ -819,7 +830,7 @@ async function saveReferral(type, id) {
   const table = isOut ? 'outbound_referrals' : 'inbound_referrals';
   let record = { first_name:fn, last_name:ln, created_by:byId };
   if (isOut) { record.referred_to=src; record.reason=reason; }
-  else { record.referral_source=src; }
+  else { record.referral_source=src; record.referral_type=refType; }
 
   let error;
   if (id!=null) {
@@ -848,7 +859,8 @@ function viewReferral(type, id) {
     <div class="field"><label>Created By</label><p>${esc(r.created_by_name)}</p></div>
     ${isOut?`<div class="field"><label>Referred To</label><p>${esc(r.referred_to)}</p></div>
     <div class="field"><label>Reason</label><p>${esc(r.reason||'—')}</p></div>`
-    :`<div class="field"><label>Referral Source</label><p>${esc(r.referral_source)}</p></div>`}
+    :`<div class="field"><label>Referral Source</label><p>${esc(r.referral_source)}</p></div>
+    <div class="field"><label>Referral Type</label><p>${esc(r.referral_type||'—')}</p></div>`}
   </div>`;
   openModal((isOut?'Outbound':'Inbound')+' Referral Details',body,
     `<button class="btn btn-outline" onclick="closeModal()">Close</button>
