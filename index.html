@@ -297,7 +297,9 @@
 // CONFIGURATION — Replace these with your Supabase project values
 // ============================================================
 const SUPABASE_URL  = 'https://xhkgazlmudfwfnjqwgqo.supabase.co';
-const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhoa2dhemxtdWRmd2ZuanF3Z3FvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2OTQ5OTIsImV4cCI6MjA5NDI3MDk5Mn0.wxcHpFlRSy2u51RNvF5Hd8hv2sIkYet98L_PR6CgsDc';
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhoa2dhemxtdWRmd2ZuanF3Z3FvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2OTQ5OTIsImV4cCI6MjA5NDI3MDk5Mn0.wxcHpFlRSy2u51RNvF5Hd8hv2sIkYet98L_PR6CgsDc
+
+';
 // ============================================================
 
 const { createClient } = supabase;
@@ -399,11 +401,12 @@ async function initApp(user) {
 }
 
 async function loadAllData() {
+  // Fetch all rows (Supabase defaults to 1000 limit, so we set higher)
   const [p, i, o, s] = await Promise.all([
-    sb.from('profiles').select('*').order('created_at'),
-    sb.from('inbound_referrals').select('*, profiles:created_by(first_name, last_name)').order('created_at', { ascending: false }),
-    sb.from('outbound_referrals').select('*, profiles:created_by(first_name, last_name)').order('created_at', { ascending: false }),
-    sb.from('referral_sources').select('*').order('name')
+    sb.from('profiles').select('*').order('created_at').limit(10000),
+    sb.from('inbound_referrals').select('*, profiles:created_by(first_name, last_name)').order('created_at', { ascending: false }).limit(10000),
+    sb.from('outbound_referrals').select('*, profiles:created_by(first_name, last_name)').order('created_at', { ascending: false }).limit(10000),
+    sb.from('referral_sources').select('*').order('name').limit(10000)
   ]);
   profiles = p.data || [];
   referralSources = (s.data || []).map(x => x.name);
