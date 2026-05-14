@@ -447,10 +447,66 @@ function renderPage() {
 }
 
 // ===================== DASHBOARD =====================
+// Default date range: last 7 days
+let dashStartDate = '';
+let dashEndDate = '';
+
+function initDashDates() {
+  const now = new Date();
+  const weekAgo = new Date(now);
+  weekAgo.setDate(weekAgo.getDate() - 6);
+  dashEndDate = now.toISOString().slice(0,10);
+  dashStartDate = weekAgo.toISOString().slice(0,10);
+}
+initDashDates();
+
+function filterByDateRange(data) {
+  return data.filter(r => {
+    if (!r.created_at) return false;
+    const d = r.created_at.slice(0,10);
+    return d >= dashStartDate && d <= dashEndDate;
+  });
+}
+
+function countByField(data, field) {
+  const counts = {};
+  data.forEach(r => {
+    const val = r[field] || '(blank)';
+    counts[val] = (counts[val] || 0) + 1;
+  });
+  return Object.entries(counts).sort((a,b) => b[1] - a[1]);
+}
+
+function updateDashDates() {
+  const s = document.getElementById('dashStart').value;
+  const e = document.getElementById('dashEnd').value;
+  if (s) dashStartDate = s;
+  if (e) dashEndDate = e;
+  renderPage();
+}
+
+function setQuickRange(days) {
+  const now = new Date();
+  const past = new Date(now);
+  past.setDate(past.getDate() - (days - 1));
+  dashEndDate = now.toISOString().slice(0,10);
+  dashStartDate = past.toISOString().slice(0,10);
+  renderPage();
+}
+
 function renderDashboard(c) {
   const today = new Date().toISOString().slice(0,10);
   const inToday = inboundData.filter(r => r.created_at?.slice(0,10) === today).length;
   const outToday = outboundData.filter(r => r.created_at?.slice(0,10) === today).length;
+
+  // Filtered data for date range
+  const inFiltered = filterByDateRange(inboundData);
+  const outFiltered = filterByDateRange(outboundData);
+
+  // Counts
+  const sourceCounts = countByField(inFiltered, 'referral_source');
+  const referredToCounts = countByField(outFiltered, 'referred_to');
+  const reasonCounts = countByField(outFiltered, 'reason');
 
   c.innerHTML = `
     <div class="stats-row">
@@ -460,6 +516,81 @@ function renderDashboard(c) {
       <div class="stat-card outbound"><h3>Outbound Today</h3><div class="num">${outToday}</div></div>
       <div class="stat-card users"><h3>Team Members</h3><div class="num">${profiles.length}</div></div>
     </div>
+
+    <!-- Date Range Picker -->
+    <div class="table-card" style="margin-bottom:20px;">
+      <div class="table-toolbar" style="flex-wrap:wrap;gap:10px;">
+        <strong>Date Range</strong>
+        <input type="date" id="dashStart" value="${dashStartDate}" onchange="updateDashDates()" style="padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;"/>
+        <span style="color:var(--text-light);">to</span>
+        <input type="date" id="dashEnd" value="${dashEndDate}" onchange="updateDashDates()" style="padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;"/>
+        <div class="spacer"></div>
+        <button class="btn btn-outline btn-sm" onclick="setQuickRange(7)">Last 7 Days</button>
+        <button class="btn btn-outline btn-sm" onclick="setQuickRange(14)">Last 14 Days</button>
+        <button class="btn btn-outline btn-sm" onclick="setQuickRange(30)">Last 30 Days</button>
+        <button class="btn btn-outline btn-sm" onclick="setQuickRange(90)">Last 90 Days</button>
+      </div>
+      <div style="padding:12px 20px;display:flex;gap:24px;font-size:14px;">
+        <span><strong style="color:var(--accent)">${inFiltered.length}</strong> inbound referrals in range</span>
+        <span><strong style="color:var(--warning)">${outFiltered.length}</strong> outbound referrals in range</span>
+      </div>
+    </div>
+
+    <!-- Count Tables -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:20px;">
+      <!-- Inbound Source Counts -->
+      <div class="table-card">
+        <div class="table-toolbar"><strong>Inbound by Source</strong><div class="spacer"></div><span style="font-size:12px;color:var(--text-light)">${sourceCounts.length} sources</span></div>
+        <div style="max-height:400px;overflow-y:auto;">
+        <table>
+          <thead><tr><th>Referral Source</th><th style="text-align:right;width:60px;">Count</th></tr></thead>
+          <tbody>
+            ${sourceCounts.length ? sourceCounts.map(([name, count]) => `<tr>
+              <td>${esc(name)}</td>
+              <td style="text-align:right;font-weight:700;color:var(--accent);">${count}</td>
+            </tr>`).join('')
+            : '<tr><td colspan="2" style="text-align:center;color:var(--text-light);padding:24px;">No data in range</td></tr>'}
+          </tbody>
+        </table>
+        </div>
+      </div>
+
+      <!-- Outbound Referred To Counts -->
+      <div class="table-card">
+        <div class="table-toolbar"><strong>Outbound by Referred To</strong><div class="spacer"></div><span style="font-size:12px;color:var(--text-light)">${referredToCounts.length} destinations</span></div>
+        <div style="max-height:400px;overflow-y:auto;">
+        <table>
+          <thead><tr><th>Referred To</th><th style="text-align:right;width:60px;">Count</th></tr></thead>
+          <tbody>
+            ${referredToCounts.length ? referredToCounts.map(([name, count]) => `<tr>
+              <td>${esc(name)}</td>
+              <td style="text-align:right;font-weight:700;color:var(--warning);">${count}</td>
+            </tr>`).join('')
+            : '<tr><td colspan="2" style="text-align:center;color:var(--text-light);padding:24px;">No data in range</td></tr>'}
+          </tbody>
+        </table>
+        </div>
+      </div>
+
+      <!-- Reason for Referral Counts -->
+      <div class="table-card">
+        <div class="table-toolbar"><strong>Outbound by Reason</strong><div class="spacer"></div><span style="font-size:12px;color:var(--text-light)">${reasonCounts.length} reasons</span></div>
+        <div style="max-height:400px;overflow-y:auto;">
+        <table>
+          <thead><tr><th>Reason for Referral</th><th style="text-align:right;width:60px;">Count</th></tr></thead>
+          <tbody>
+            ${reasonCounts.length ? reasonCounts.map(([name, count]) => `<tr>
+              <td>${esc(name)}</td>
+              <td style="text-align:right;font-weight:700;color:var(--primary);">${count}</td>
+            </tr>`).join('')
+            : '<tr><td colspan="2" style="text-align:center;color:var(--text-light);padding:24px;">No data in range</td></tr>'}
+          </tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Activity -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
       <div class="table-card">
         <div class="table-toolbar"><strong>Recent Inbound</strong></div>
