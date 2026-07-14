@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dove &amp; Robin Recovery — Referral CRM</title>
+<title>IntakeCRM — Client Relationship Management</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
@@ -195,8 +195,8 @@
 <!-- ============ LOGIN SCREEN ============ -->
 <div class="login-screen" id="loginScreen">
   <div class="login-box">
-    <h1>Dove &amp; Robin Recovery</h1>
-    <p class="subtitle">Referral Management CRM</p>
+    <h1 style="font-size:26px;font-weight:800;letter-spacing:-.5px"><span style="color:#1e4258">Intake</span><span style="color:#5b8db8">CRM</span></h1>
+    <p class="subtitle">Client Relationship Management</p>
     <div class="tabs">
       <button class="active" onclick="switchAuthTab('login')">Sign In</button>
       <button onclick="switchAuthTab('signup')">Create Account</button>
@@ -234,7 +234,8 @@
 <div class="app-layout" id="appScreen">
   <aside class="sidebar">
     <div class="sidebar-header">
-      <h2>Dove &amp; Robin Recovery</h2>
+      <h2 style="font-size:18px;font-weight:800;letter-spacing:-.3px"><span style="color:#fff">Intake</span><span style="color:rgba(150,200,255,0.85)">CRM</span></h2>
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.2px;opacity:.5;margin-top:2px">Client Relationship Management</div>
       <div class="user-name" id="sidebarUserName"></div>
     </div>
     <nav>
@@ -242,7 +243,7 @@
       <button onclick="showPage('inbound')">Inbound Referrals</button>
       <button onclick="showPage('outbound')">Outbound Referrals</button>
       <button onclick="showPage('team')">Team</button>
-      <a href="https://doverobin.netlify.app" style="display:block;width:100%;padding:10px 18px;background:none;border:none;color:rgba(255,255,255,.65);font-size:14px;text-align:left;cursor:pointer;text-decoration:none;transition:all .15s;border-top:1px solid rgba(255,255,255,.08);margin-top:8px;padding-top:14px">📋 Admissions</a>
+      <a href="https://doverobin.netlify.app" style="display:block;width:100%;padding:10px 18px;background:none;border:none;color:rgba(255,255,255,.65);font-size:14px;text-align:left;cursor:pointer;text-decoration:none;transition:all .15s;border-top:1px solid rgba(255,255,255,.08);margin-top:8px;padding-top:14px">Admissions</a>
     </nav>
     <div class="sidebar-footer">
       <button onclick="handleLogout()">Sign Out</button>
@@ -270,19 +271,13 @@
 <div id="toasts"></div>
 
 <script>
-// ============================================================
-// CONFIGURATION — Replace these with your Supabase project values
-// ============================================================
 const SUPABASE_URL  = 'https://xhkgazlmudfwfnjqwgqo.supabase.co';
 const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhoa2dhemxtdWRmd2ZuanF3Z3FvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2OTQ5OTIsImV4cCI6MjA5NDI3MDk5Mn0.wxcHpFlRSy2u51RNvF5Hd8hv2sIkYet98L_PR6CgsDc';
-// ============================================================
 
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Role options
 const ROLES = ['Admissions Coordinator', 'Business Development', 'Manager'];
-// Inbound referral type options
 const REFERRAL_TYPES = ['New Referral', 'Alumni', 'Detox Return'];
 
 let currentUser = null;
@@ -296,7 +291,6 @@ let sortCol = 'created_at';
 let sortDir = 'desc';
 let searchText = '';
 
-// ===================== AUTH =====================
 function switchAuthTab(tab) {
   document.querySelectorAll('.login-box .tabs button').forEach(b => b.classList.remove('active'));
   if (tab === 'login') {
@@ -316,12 +310,10 @@ async function handleLogin(e) {
   const err = document.getElementById('loginError');
   btn.disabled = true; btn.innerHTML = '<span class="loading-spinner"></span>';
   err.style.display = 'none';
-
   const { data, error } = await sb.auth.signInWithPassword({
     email: document.getElementById('loginEmail').value.trim(),
     password: document.getElementById('loginPassword').value
   });
-
   btn.disabled = false; btn.textContent = 'Sign In';
   if (error) { err.textContent = error.message; err.style.display = 'block'; return; }
   await initApp(data.user);
@@ -333,24 +325,18 @@ async function handleSignup(e) {
   const err = document.getElementById('signupError');
   btn.disabled = true; btn.innerHTML = '<span class="loading-spinner"></span>';
   err.style.display = 'none';
-
   const firstName = document.getElementById('signupFirst').value.trim();
   const lastName = document.getElementById('signupLast').value.trim();
-
   const { data, error } = await sb.auth.signUp({
     email: document.getElementById('signupEmail').value.trim(),
     password: document.getElementById('signupPassword').value,
     options: { data: { first_name: firstName, last_name: lastName } }
   });
-
   btn.disabled = false; btn.textContent = 'Create Account';
   if (error) { err.textContent = error.message; err.style.display = 'block'; return; }
-
   if (data.user && !data.session) {
     err.textContent = 'Check your email for a confirmation link, then sign in.';
-    err.style.display = 'block';
-    err.style.color = 'var(--success)';
-    return;
+    err.style.display = 'block'; err.style.color = 'var(--success)'; return;
   }
   await initApp(data.user);
 }
@@ -362,22 +348,18 @@ async function handleLogout() {
   document.getElementById('loginScreen').style.display = '';
 }
 
-// ===================== APP INIT =====================
 async function initApp(user) {
   currentUser = user;
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('appScreen').style.display = 'flex';
-
   const { data: prof } = await sb.from('profiles').select('*').eq('id', user.id).single();
   currentProfile = prof;
   document.getElementById('sidebarUserName').textContent =
     (prof?.first_name || '') + ' ' + (prof?.last_name || '') || user.email;
-
   await loadAllData();
   showPage('dashboard');
 }
 
-// Fetch all rows from a table using pagination (Supabase caps at 1000 per request)
 async function fetchAll(query) {
   let allData = [];
   let from = 0;
@@ -400,25 +382,18 @@ async function loadAllData() {
     fetchAll(sb.from('outbound_referrals').select('*, profiles:created_by(first_name, last_name)').order('created_at', { ascending: false })),
     fetchAll(sb.from('referral_sources').select('*').order('name'))
   ]);
-
   profiles = p || [];
   inboundData = (i || []).map(r => ({
-    ...r,
-    created_by_name: r.profiles ? r.profiles.first_name + ' ' + r.profiles.last_name : '—'
+    ...r, created_by_name: r.profiles ? r.profiles.first_name + ' ' + r.profiles.last_name : '—'
   }));
   outboundData = (o || []).map(r => ({
-    ...r,
-    created_by_name: r.profiles ? r.profiles.first_name + ' ' + r.profiles.last_name : '—'
+    ...r, created_by_name: r.profiles ? r.profiles.first_name + ' ' + r.profiles.last_name : '—'
   }));
   referralSources = (s || []).map(x => x.name);
 }
 
-// ===================== NAVIGATION =====================
 function showPage(page) {
-  currentPage = page;
-  searchText = '';
-  sortCol = 'created_at';
-  sortDir = 'desc';
+  currentPage = page; searchText = ''; sortCol = 'created_at'; sortDir = 'desc';
   document.querySelectorAll('.sidebar nav button').forEach(b => b.classList.remove('active'));
   const labels = { dashboard:'Dashboard', inbound:'Inbound Referrals', outbound:'Outbound Referrals', team:'Team' };
   document.getElementById('pageTitle').textContent = labels[page] || '';
@@ -439,72 +414,47 @@ function renderPage() {
   else if (currentPage === 'team') renderTeam(c, a);
 }
 
-// ===================== DASHBOARD =====================
-// Default date range: last 7 days
 let dashStartDate = '';
 let dashEndDate = '';
-
 function initDashDates() {
   const now = new Date();
-  const weekAgo = new Date(now);
-  weekAgo.setDate(weekAgo.getDate() - 6);
+  const weekAgo = new Date(now); weekAgo.setDate(weekAgo.getDate() - 6);
   dashEndDate = now.toISOString().slice(0,10);
   dashStartDate = weekAgo.toISOString().slice(0,10);
 }
 initDashDates();
 
 function filterByDateRange(data) {
-  return data.filter(r => {
-    if (!r.created_at) return false;
-    const d = r.created_at.slice(0,10);
-    return d >= dashStartDate && d <= dashEndDate;
-  });
+  return data.filter(r => { if (!r.created_at) return false; const d = r.created_at.slice(0,10); return d >= dashStartDate && d <= dashEndDate; });
 }
-
 function countByField(data, field) {
   const counts = {};
-  data.forEach(r => {
-    const val = r[field] || '(blank)';
-    counts[val] = (counts[val] || 0) + 1;
-  });
+  data.forEach(r => { const val = r[field] || '(blank)'; counts[val] = (counts[val] || 0) + 1; });
   return Object.entries(counts).sort((a,b) => b[1] - a[1]);
 }
-
 function updateDashDates() {
   const s = document.getElementById('dashStart').value;
   const e = document.getElementById('dashEnd').value;
-  if (s) dashStartDate = s;
-  if (e) dashEndDate = e;
-  renderPage();
+  if (s) dashStartDate = s; if (e) dashEndDate = e; renderPage();
 }
-
 function setQuickRange(days) {
-  const now = new Date();
-  const past = new Date(now);
-  past.setDate(past.getDate() - (days - 1));
-  dashEndDate = now.toISOString().slice(0,10);
-  dashStartDate = past.toISOString().slice(0,10);
-  renderPage();
+  const now = new Date(); const past = new Date(now); past.setDate(past.getDate() - (days - 1));
+  dashEndDate = now.toISOString().slice(0,10); dashStartDate = past.toISOString().slice(0,10); renderPage();
 }
 
 function renderDashboard(c) {
   const today = new Date().toISOString().slice(0,10);
   const inFiltered = filterByDateRange(inboundData);
   const outFiltered = filterByDateRange(outboundData);
-
   const inToday = inboundData.filter(r => r.created_at && r.created_at.slice(0,10) === today).length;
   const outToday = outboundData.filter(r => r.created_at && r.created_at.slice(0,10) === today).length;
-
   const sourceCounts = countByField(inFiltered, 'referral_source');
   const referredToCounts = countByField(outFiltered, 'referred_to');
   const reasonCounts = countByField(outFiltered, 'reason');
-
   function countTable(rows) {
     if (!rows.length) return '<p style="font-size:13px;color:var(--text-light);padding:8px 0;">No data in this range.</p>';
-    return `<table class="count-table">${rows.map(([name,cnt]) =>
-      `<tr><td>${esc(name)}</td><td>${cnt}</td></tr>`).join('')}</table>`;
+    return `<table class="count-table">${rows.map(([name,cnt]) => `<tr><td>${esc(name)}</td><td>${cnt}</td></tr>`).join('')}</table>`;
   }
-
   c.innerHTML = `
     <div class="dash-date-bar">
       <label style="font-size:13px;font-weight:600;">Date Range:</label>
@@ -516,62 +466,29 @@ function renderDashboard(c) {
       <button class="quick-btn" onclick="setQuickRange(90)">90 Days</button>
       <button class="quick-btn" onclick="setQuickRange(365)">1 Year</button>
     </div>
-
     <div class="dash-grid">
-      <div class="dash-card">
-        <div class="number">${inFiltered.length}</div>
-        <div class="label">Inbound (Date Range)</div>
-      </div>
-      <div class="dash-card">
-        <div class="number">${outFiltered.length}</div>
-        <div class="label">Outbound (Date Range)</div>
-      </div>
-      <div class="dash-card">
-        <div class="number">${inToday}</div>
-        <div class="label">Inbound Today</div>
-      </div>
-      <div class="dash-card">
-        <div class="number">${outToday}</div>
-        <div class="label">Outbound Today</div>
-      </div>
-      <div class="dash-card">
-        <div class="number">${inboundData.length}</div>
-        <div class="label">Total Inbound (All Time)</div>
-      </div>
-      <div class="dash-card">
-        <div class="number">${outboundData.length}</div>
-        <div class="label">Total Outbound (All Time)</div>
-      </div>
+      <div class="dash-card"><div class="number">${inFiltered.length}</div><div class="label">Inbound (Date Range)</div></div>
+      <div class="dash-card"><div class="number">${outFiltered.length}</div><div class="label">Outbound (Date Range)</div></div>
+      <div class="dash-card"><div class="number">${inToday}</div><div class="label">Inbound Today</div></div>
+      <div class="dash-card"><div class="number">${outToday}</div><div class="label">Outbound Today</div></div>
+      <div class="dash-card"><div class="number">${inboundData.length}</div><div class="label">Total Inbound (All Time)</div></div>
+      <div class="dash-card"><div class="number">${outboundData.length}</div><div class="label">Total Outbound (All Time)</div></div>
     </div>
-
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
-      <div class="count-section">
-        <h3>Inbound by Referral Source</h3>
-        ${countTable(sourceCounts)}
-      </div>
-      <div class="count-section">
-        <h3>Outbound by Referred To</h3>
-        ${countTable(referredToCounts)}
-      </div>
+      <div class="count-section"><h3>Inbound by Referral Source</h3>${countTable(sourceCounts)}</div>
+      <div class="count-section"><h3>Outbound by Referred To</h3>${countTable(referredToCounts)}</div>
     </div>
-    <div class="count-section" style="margin-top:20px;">
-      <h3>Outbound by Reason</h3>
-      ${countTable(reasonCounts)}
-    </div>`;
+    <div class="count-section" style="margin-top:20px;"><h3>Outbound by Reason</h3>${countTable(reasonCounts)}</div>`;
 }
 
-// ===================== REFERRALS TABLE =====================
 function renderReferrals(c, a, type) {
   const isOut = type === 'outbound';
   const label = isOut ? 'Outbound' : 'Inbound';
   const data = isOut ? outboundData : inboundData;
-
-  a.innerHTML = `
-    <div style="display:flex;gap:8px;">
-      <button class="btn btn-outline btn-sm" onclick="exportCSV('${type}')">Export CSV</button>
-      <button class="btn ${isOut?'btn-accent':'btn-primary'} btn-sm" onclick="openReferralModal('${type}')">+ New ${label}</button>
-    </div>`;
-
+  a.innerHTML = `<div style="display:flex;gap:8px;">
+    <button class="btn btn-outline btn-sm" onclick="exportCSV('${type}')">Export CSV</button>
+    <button class="btn ${isOut?'btn-accent':'btn-primary'} btn-sm" onclick="openReferralModal('${type}')">+ New ${label}</button>
+  </div>`;
   let filtered = data.filter(r => {
     if (!searchText) return true;
     const s = searchText.toLowerCase();
@@ -581,7 +498,6 @@ function renderReferrals(c, a, type) {
       || (r.reason||'').toLowerCase().includes(s)
       || (r.created_by_name||'').toLowerCase().includes(s);
   });
-
   filtered.sort((a,b) => {
     let va = a[sortCol]||'', vb = b[sortCol]||'';
     if (sortCol==='created_at') { va=new Date(va); vb=new Date(vb); }
@@ -590,9 +506,7 @@ function renderReferrals(c, a, type) {
     if (va>vb) return sortDir==='asc'?1:-1;
     return 0;
   });
-
   const arrow = col => sortCol===col?(sortDir==='asc'?'&#9650;':'&#9660;'):'';
-
   c.innerHTML = `
     <div class="table-card">
       <div class="table-toolbar">
@@ -605,16 +519,14 @@ function renderReferrals(c, a, type) {
           <th onclick="toggleSort('first_name')">Name ${arrow('first_name')}</th>
           <th onclick="toggleSort('created_at')">Date / Time ${arrow('created_at')}</th>
           ${isOut
-            ? `<th onclick="toggleSort('referred_to')">Referred To ${arrow('referred_to')}</th>
-               <th onclick="toggleSort('reason')">Reason ${arrow('reason')}</th>`
-            : `<th onclick="toggleSort('referral_source')">Source ${arrow('referral_source')}</th>
-               <th onclick="toggleSort('referral_type')">Type ${arrow('referral_type')}</th>`}
+            ? `<th onclick="toggleSort('referred_to')">Referred To ${arrow('referred_to')}</th><th onclick="toggleSort('reason')">Reason ${arrow('reason')}</th>`
+            : `<th onclick="toggleSort('referral_source')">Source ${arrow('referral_source')}</th><th onclick="toggleSort('referral_type')">Type ${arrow('referral_type')}</th>`}
           <th onclick="toggleSort('created_by_name')">Created By ${arrow('created_by_name')}</th>
           <th>Actions</th>
         </tr></thead>
         <tbody id="referralTableBody">
           ${filtered.length ? filtered.map(r => renderReferralRow(r, type, isOut)).join('')
-          : `<tr><td colspan="${isOut?6:6}" class="empty-state"><p>No ${label.toLowerCase()} referrals yet. Click "+ New" to add one.</p></td></tr>`}
+          : `<tr><td colspan="6" class="empty-state"><p>No ${label.toLowerCase()} referrals yet. Click "+ New" to add one.</p></td></tr>`}
         </tbody>
       </table>
     </div>`;
@@ -624,9 +536,7 @@ function renderReferralRow(r, type, isOut) {
   return `<tr>
     <td><strong>${esc(r.first_name)} ${esc(r.last_name)}</strong></td>
     <td>${fmtDate(r.created_at)}</td>
-    ${isOut
-      ? `<td>${esc(r.referred_to)}</td><td>${esc(r.reason||'—')}</td>`
-      : `<td>${esc(r.referral_source)}</td><td>${esc(r.referral_type||'—')}</td>`}
+    ${isOut ? `<td>${esc(r.referred_to)}</td><td>${esc(r.reason||'—')}</td>` : `<td>${esc(r.referral_source)}</td><td>${esc(r.referral_type||'—')}</td>`}
     <td>${esc(r.created_by_name)}</td>
     <td class="actions-cell">
       <button class="btn btn-outline btn-sm" onclick="viewReferral('${type}',${r.id})">View</button>
@@ -636,12 +546,10 @@ function renderReferralRow(r, type, isOut) {
   </tr>`;
 }
 
-// This function updates ONLY the table body and count — keeps search input focused
 function filterTable(type) {
   const isOut = type === 'outbound';
   const label = isOut ? 'Outbound' : 'Inbound';
   const data = isOut ? outboundData : inboundData;
-
   let filtered = data.filter(r => {
     if (!searchText) return true;
     const s = searchText.toLowerCase();
@@ -651,7 +559,6 @@ function filterTable(type) {
       || (r.reason||'').toLowerCase().includes(s)
       || (r.created_by_name||'').toLowerCase().includes(s);
   });
-
   filtered.sort((a,b) => {
     let va = a[sortCol]||'', vb = b[sortCol]||'';
     if (sortCol==='created_at') { va=new Date(va); vb=new Date(vb); }
@@ -660,18 +567,14 @@ function filterTable(type) {
     if (va>vb) return sortDir==='asc'?1:-1;
     return 0;
   });
-
   const tbody = document.getElementById('referralTableBody');
   if (tbody) {
     tbody.innerHTML = filtered.length
       ? filtered.map(r => renderReferralRow(r, type, isOut)).join('')
       : `<tr><td colspan="6" class="empty-state"><p>No ${label.toLowerCase()} referrals found.</p></td></tr>`;
   }
-
   const countSpan = document.getElementById('filterCount');
-  if (countSpan) {
-    countSpan.textContent = filtered.length + ' referral' + (filtered.length !== 1 ? 's' : '');
-  }
+  if (countSpan) { countSpan.textContent = filtered.length + ' referral' + (filtered.length !== 1 ? 's' : ''); }
 }
 
 function toggleSort(col) {
@@ -680,7 +583,6 @@ function toggleSort(col) {
   renderPage();
 }
 
-// ===================== REFERRAL SOURCE DROPDOWN =====================
 function sourceOptions(selectedValue) {
   let opts = '<option value="">— Select —</option>';
   referralSources.forEach(name => {
@@ -693,87 +595,52 @@ function sourceOptions(selectedValue) {
 
 function handleSourceChange(selectEl) {
   const addNewRow = document.getElementById('addNewSourceRow');
-  if (selectEl.value === '__ADD_NEW__') {
-    addNewRow.style.display = 'flex';
-    document.getElementById('newSourceInput').focus();
-  } else {
-    addNewRow.style.display = 'none';
-  }
+  if (selectEl.value === '__ADD_NEW__') { addNewRow.style.display = 'flex'; document.getElementById('newSourceInput').focus(); }
+  else { addNewRow.style.display = 'none'; }
 }
 
 async function addNewSource() {
   const input = document.getElementById('newSourceInput');
   const name = input.value.trim();
   if (!name) { toast('Please enter a source name', 'error'); return; }
-
-  if (referralSources.some(s => s.toLowerCase() === name.toLowerCase())) {
-    toast('That source already exists', 'error');
-    return;
-  }
-
+  if (referralSources.some(s => s.toLowerCase() === name.toLowerCase())) { toast('That source already exists', 'error'); return; }
   const { error } = await sb.from('referral_sources').insert({ name });
   if (error) { toast(error.message, 'error'); return; }
-
   const { data } = await sb.from('referral_sources').select('*').order('name');
   referralSources = (data || []).map(x => x.name);
-
   const select = document.getElementById('rf_src');
-  select.innerHTML = sourceOptions(name);
-  select.value = name;
+  select.innerHTML = sourceOptions(name); select.value = name;
   document.getElementById('addNewSourceRow').style.display = 'none';
   toast('Source added!');
 }
 
-// ===================== REFERRAL MODALS =====================
 function openReferralModal(type, editId) {
   const isOut = type === 'outbound';
   const label = isOut ? 'Outbound' : 'Inbound';
   const data = isOut ? outboundData : inboundData;
   const existing = editId ? data.find(r => r.id === editId) : null;
-
-  let body = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 16px;">
-      <div class="form-group"><label>First Name</label><input id="rf_fn" value="${esc(existing?.first_name||'')}"/></div>
-      <div class="form-group"><label>Last Name</label><input id="rf_ln" value="${esc(existing?.last_name||'')}"/></div>
-    </div>`;
-
+  let body = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 16px;">
+    <div class="form-group"><label>First Name</label><input id="rf_fn" value="${esc(existing?.first_name||'')}"/></div>
+    <div class="form-group"><label>Last Name</label><input id="rf_ln" value="${esc(existing?.last_name||'')}"/></div>
+  </div>`;
   if (isOut) {
-    body += `
-      <div class="form-group">
-        <label>Referred To</label>
-        <select id="rf_src" onchange="handleSourceChange(this)">
-          ${sourceOptions(existing?.referred_to||'')}
-        </select>
-        <div id="addNewSourceRow" style="display:none;gap:8px;margin-top:8px;align-items:center;">
-          <input id="newSourceInput" placeholder="New source name" style="flex:1"/>
-          <button class="btn btn-primary btn-sm" type="button" onclick="addNewSource()">Add</button>
-        </div>
-      </div>
+    body += `<div class="form-group"><label>Referred To</label>
+      <select id="rf_src" onchange="handleSourceChange(this)">${sourceOptions(existing?.referred_to||'')}</select>
+      <div id="addNewSourceRow" style="display:none;gap:8px;margin-top:8px;align-items:center;">
+        <input id="newSourceInput" placeholder="New source name" style="flex:1"/>
+        <button class="btn btn-primary btn-sm" type="button" onclick="addNewSource()">Add</button>
+      </div></div>
       <div class="form-group"><label>Reason for Referral</label><textarea id="rf_reason">${esc(existing?.reason||'')}</textarea></div>`;
   } else {
-    const typeOpts = REFERRAL_TYPES.map(t =>
-      `<option value="${esc(t)}"${(existing?.referral_type||'')===t?' selected':''}>${esc(t)}</option>`
-    ).join('');
-    body += `
-      <div class="form-group">
-        <label>Referral Source</label>
-        <select id="rf_src" onchange="handleSourceChange(this)">
-          ${sourceOptions(existing?.referral_source||'')}
-        </select>
-        <div id="addNewSourceRow" style="display:none;gap:8px;margin-top:8px;align-items:center;">
-          <input id="newSourceInput" placeholder="New source name" style="flex:1"/>
-          <button class="btn btn-primary btn-sm" type="button" onclick="addNewSource()">Add</button>
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Referral Type</label>
-        <select id="rf_type">
-          <option value="">— Select —</option>
-          ${typeOpts}
-        </select>
-      </div>`;
+    const typeOpts = REFERRAL_TYPES.map(t => `<option value="${esc(t)}"${(existing?.referral_type||'')===t?' selected':''}>${esc(t)}</option>`).join('');
+    body += `<div class="form-group"><label>Referral Source</label>
+      <select id="rf_src" onchange="handleSourceChange(this)">${sourceOptions(existing?.referral_source||'')}</select>
+      <div id="addNewSourceRow" style="display:none;gap:8px;margin-top:8px;align-items:center;">
+        <input id="newSourceInput" placeholder="New source name" style="flex:1"/>
+        <button class="btn btn-primary btn-sm" type="button" onclick="addNewSource()">Add</button>
+      </div></div>
+      <div class="form-group"><label>Referral Type</label><select id="rf_type"><option value="">— Select —</option>${typeOpts}</select></div>`;
   }
-
   const saveLabel = existing ? 'Save Changes' : 'Add ' + label;
   openModal((existing ? 'Edit ' : 'New ') + label + ' Referral', body,
     `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
@@ -786,37 +653,19 @@ async function saveReferral(type, editId) {
   const ln = document.getElementById('rf_ln').value.trim();
   const srcSelect = document.getElementById('rf_src');
   const srcVal = srcSelect.value === '__ADD_NEW__' ? '' : srcSelect.value;
-
   if (!fn || !ln) { toast('Name is required', 'error'); return; }
   if (!srcVal) { toast('Please select a ' + (isOut ? 'referred to' : 'source'), 'error'); return; }
-
-  const btn = document.getElementById('saveRefBtn');
-  btn.disabled = true;
-
+  const btn = document.getElementById('saveRefBtn'); btn.disabled = true;
   let record;
-  if (isOut) {
-    const reason = document.getElementById('rf_reason').value.trim();
-    record = { first_name: fn, last_name: ln, referred_to: srcVal, reason };
-  } else {
-    const refType = document.getElementById('rf_type').value;
-    record = { first_name: fn, last_name: ln, referral_source: srcVal, referral_type: refType };
-  }
-
+  if (isOut) { const reason = document.getElementById('rf_reason').value.trim(); record = { first_name: fn, last_name: ln, referred_to: srcVal, reason }; }
+  else { const refType = document.getElementById('rf_type').value; record = { first_name: fn, last_name: ln, referral_source: srcVal, referral_type: refType }; }
   const table = isOut ? 'outbound_referrals' : 'inbound_referrals';
-
   let error;
-  if (editId) {
-    ({ error } = await sb.from(table).update(record).eq('id', editId));
-  } else {
-    record.created_by = currentUser.id;
-    ({ error } = await sb.from(table).insert(record));
-  }
-
+  if (editId) { ({ error } = await sb.from(table).update(record).eq('id', editId)); }
+  else { record.created_by = currentUser.id; ({ error } = await sb.from(table).insert(record)); }
   if (error) { toast(error.message, 'error'); btn.disabled = false; return; }
-  await loadAllData();
-  closeModal();
-  toast(editId ? 'Referral updated' : 'Referral added');
-  renderPage();
+  await loadAllData(); closeModal();
+  toast(editId ? 'Referral updated' : 'Referral added'); renderPage();
 }
 
 async function deleteReferral(type, id) {
@@ -824,59 +673,44 @@ async function deleteReferral(type, id) {
   const table = type === 'outbound' ? 'outbound_referrals' : 'inbound_referrals';
   const { error } = await sb.from(table).delete().eq('id', id);
   if (error) { toast(error.message, 'error'); return; }
-  await loadAllData();
-  toast('Referral deleted');
-  renderPage();
+  await loadAllData(); toast('Referral deleted'); renderPage();
 }
 
 function viewReferral(type, id) {
   const isOut = type === 'outbound';
   const data = isOut ? outboundData : inboundData;
-  const r = data.find(x => x.id === id);
-  if (!r) return;
-
+  const r = data.find(x => x.id === id); if (!r) return;
   let body = `
     <div class="detail-row"><div class="detail-label">Name</div><div class="detail-value">${esc(r.first_name)} ${esc(r.last_name)}</div></div>
     <div class="detail-row"><div class="detail-label">Date / Time</div><div class="detail-value">${fmtDate(r.created_at)}</div></div>`;
-
   if (isOut) {
-    body += `
-      <div class="detail-row"><div class="detail-label">Referred To</div><div class="detail-value">${esc(r.referred_to)}</div></div>
+    body += `<div class="detail-row"><div class="detail-label">Referred To</div><div class="detail-value">${esc(r.referred_to)}</div></div>
       <div class="detail-row"><div class="detail-label">Reason</div><div class="detail-value">${esc(r.reason||'—')}</div></div>`;
   } else {
-    body += `
-      <div class="detail-row"><div class="detail-label">Source</div><div class="detail-value">${esc(r.referral_source)}</div></div>
+    body += `<div class="detail-row"><div class="detail-label">Source</div><div class="detail-value">${esc(r.referral_source)}</div></div>
       <div class="detail-row"><div class="detail-label">Type</div><div class="detail-value">${esc(r.referral_type||'—')}</div></div>`;
   }
-
   body += `<div class="detail-row"><div class="detail-label">Created By</div><div class="detail-value">${esc(r.created_by_name)}</div></div>`;
-
   openModal('Referral Details', body,
     `<button class="btn btn-outline" onclick="closeModal()">Close</button>
      <button class="btn btn-primary" onclick="closeModal();openReferralModal('${type}',${r.id})">Edit</button>`);
 }
 
-// ===================== TEAM =====================
 function renderTeam(c, a) {
   a.innerHTML = `<button class="btn btn-primary btn-sm" onclick="openInviteModal()">Invite Team Member</button>`;
-
   const rows = profiles.map(p => {
     const isMe = p.id === currentUser?.id;
     return `<tr>
       <td><strong>${esc(p.first_name)} ${esc(p.last_name)}</strong>${isMe?' <span style="font-size:11px;color:var(--accent);">(you)</span>':''}</td>
-      <td>${esc(p.role||'—')}</td>
-      <td>${fmtDate(p.created_at)}</td>
+      <td>${esc(p.role||'—')}</td><td>${fmtDate(p.created_at)}</td>
       <td>${isMe?`<button class="btn btn-outline btn-sm" onclick="openEditProfileModal('${p.id}')">Edit Profile</button>`:''}</td>
     </tr>`;
   }).join('');
-
   c.innerHTML = `
-    <div class="table-card">
-      <table>
-        <thead><tr><th>Name</th><th>Role</th><th>Joined</th><th>Actions</th></tr></thead>
-        <tbody>${rows || '<tr><td colspan="4" class="empty-state"><p>No team members yet.</p></td></tr>'}</tbody>
-      </table>
-    </div>
+    <div class="table-card"><table>
+      <thead><tr><th>Name</th><th>Role</th><th>Joined</th><th>Actions</th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="4" class="empty-state"><p>No team members yet.</p></td></tr>'}</tbody>
+    </table></div>
     <div style="margin-top:16px;padding:16px;background:var(--card);border-radius:10px;box-shadow:var(--shadow);">
       <p style="font-size:13px;color:var(--text-light);">To add team members, click "Invite Team Member" above. They'll receive a link to create their account. Each person who signs up automatically appears here.</p>
     </div>`;
@@ -888,12 +722,8 @@ function getUserEmail(uid) {
 }
 
 function openInviteModal() {
-  const body = `
-    <p style="margin-bottom:16px;color:var(--text-light);font-size:14px;">Share this page's URL with your team members. When they visit and click "Create Account," they'll automatically be added to your CRM.</p>
-    <div class="form-group">
-      <label>Share this link</label>
-      <input type="text" id="shareLink" value="${window.location.href}" readonly onclick="this.select()"/>
-    </div>
+  const body = `<p style="margin-bottom:16px;color:var(--text-light);font-size:14px;">Share this page's URL with your team members. When they visit and click "Create Account," they'll automatically be added to your CRM.</p>
+    <div class="form-group"><label>Share this link</label><input type="text" id="shareLink" value="${window.location.href}" readonly onclick="this.select()"/></div>
     <p style="font-size:12px;color:var(--text-light);">Only @doverecovery.com and @robinrecovery.com emails can sign up.</p>`;
   openModal('Invite Team Member', body,
     `<button class="btn btn-outline" onclick="closeModal()">Close</button>
@@ -901,21 +731,13 @@ function openInviteModal() {
 }
 
 function openEditProfileModal(uid) {
-  const p = profiles.find(x => x.id === uid);
-  if (!p) return;
+  const p = profiles.find(x => x.id === uid); if (!p) return;
   const roleOpts = ROLES.map(r => `<option value="${esc(r)}"${p.role===r?' selected':''}>${esc(r)}</option>`).join('');
-  const body = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 16px;">
-      <div class="form-group"><label>First Name</label><input id="ep_fn" value="${esc(p.first_name)}"/></div>
-      <div class="form-group"><label>Last Name</label><input id="ep_ln" value="${esc(p.last_name)}"/></div>
-    </div>
-    <div class="form-group">
-      <label>Role</label>
-      <select id="ep_role">
-        <option value="">— Select Role —</option>
-        ${roleOpts}
-      </select>
-    </div>`;
+  const body = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 16px;">
+    <div class="form-group"><label>First Name</label><input id="ep_fn" value="${esc(p.first_name)}"/></div>
+    <div class="form-group"><label>Last Name</label><input id="ep_ln" value="${esc(p.last_name)}"/></div>
+  </div>
+  <div class="form-group"><label>Role</label><select id="ep_role"><option value="">— Select Role —</option>${roleOpts}</select></div>`;
   openModal('Edit Your Profile', body,
     `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
      <button class="btn btn-primary" id="saveProfileBtn" onclick="saveProfile('${uid}')">Save</button>`);
@@ -926,8 +748,7 @@ async function saveProfile(uid) {
   const ln = document.getElementById('ep_ln').value.trim();
   const role = document.getElementById('ep_role').value;
   if (!fn || !ln) { toast('Name is required', 'error'); return; }
-  const btn = document.getElementById('saveProfileBtn');
-  btn.disabled = true;
+  const btn = document.getElementById('saveProfileBtn'); btn.disabled = true;
   const { error } = await sb.from('profiles').update({ first_name: fn, last_name: ln, role }).eq('id', uid);
   if (error) { toast(error.message, 'error'); btn.disabled = false; return; }
   await loadAllData();
@@ -935,14 +756,12 @@ async function saveProfile(uid) {
   closeModal(); toast('Profile updated'); renderPage();
 }
 
-// ===================== CSV EXPORT =====================
 function exportCSV(type) {
   const isOut = type === 'outbound';
   const data = isOut ? outboundData : inboundData;
   let headers = ['First Name', 'Last Name', 'Created Date', 'Created By'];
   if (isOut) headers.splice(2, 0, 'Referred To', 'Reason');
   else headers.splice(2, 0, 'Referral Source', 'Referral Type');
-
   let rows = [headers.join(',')];
   data.forEach(r => {
     let row = [r.first_name, r.last_name];
@@ -953,13 +772,11 @@ function exportCSV(type) {
   });
   const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = type + '_referrals_' + new Date().toISOString().slice(0, 10) + '.csv';
-  a.click(); URL.revokeObjectURL(url);
-  toast('CSV exported');
+  const a = document.createElement('a'); a.href = url;
+  a.download = type + '_referrals_' + new Date().toISOString().slice(0, 10) + '.csv';
+  a.click(); URL.revokeObjectURL(url); toast('CSV exported');
 }
 
-// ===================== UTILITIES =====================
 function openModal(title, bodyHtml, footerHtml) {
   document.getElementById('modalTitle').textContent = title;
   document.getElementById('modalBody').innerHTML = bodyHtml;
@@ -971,8 +788,7 @@ document.getElementById('modalOverlay').addEventListener('click', e => { if (e.t
 
 function toast(msg, type='success') {
   const el = document.createElement('div');
-  el.className = 'toast toast-' + type;
-  el.textContent = msg;
+  el.className = 'toast toast-' + type; el.textContent = msg;
   document.getElementById('toasts').appendChild(el);
   setTimeout(() => el.remove(), 3000);
 }
@@ -984,12 +800,9 @@ function fmtDate(iso) {
     + ' ' + d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
 }
 
-// ===================== AUTO-LOGIN CHECK =====================
 (async () => {
   const { data: { session } } = await sb.auth.getSession();
-  if (session?.user) {
-    await initApp(session.user);
-  }
+  if (session?.user) { await initApp(session.user); }
 })();
 </script>
 </body>
