@@ -29,7 +29,6 @@
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:'Segoe UI',system-ui,-apple-system,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
 
-  /* ---- Login Screen ---- */
   .login-screen {
     min-height:100vh; display:flex; align-items:center; justify-content:center;
     background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 50%, var(--accent) 100%);
@@ -61,7 +60,6 @@
   .login-error { display:none; padding:10px; background:var(--danger-light); color:var(--danger);
     border-radius:8px; font-size:13px; margin-top:10px; }
 
-  /* ---- App Layout ---- */
   .app-layout { display:none; min-height:100vh; }
   .sidebar {
     width:240px; background:var(--primary-dark); color:#fff; display:flex; flex-direction:column;
@@ -87,13 +85,11 @@
   .main-area { margin-left:240px; flex:1; display:flex; flex-direction:column; min-height:100vh; }
   .top-bar {
     padding:16px 28px; background:var(--card); border-bottom:1px solid var(--border);
-    display:flex; align-items:center; justify-content:space-between;
-    box-shadow:var(--shadow);
+    display:flex; align-items:center; justify-content:space-between; box-shadow:var(--shadow);
   }
   .top-bar h1 { font-size:20px; color:var(--primary-dark); }
   .content { padding:24px 28px; flex:1; }
 
-  /* ---- Buttons ---- */
   .btn { padding:8px 16px; border:none; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s; }
   .btn-primary { background:var(--primary); color:#fff; }
   .btn-primary:hover { background:var(--primary-light); }
@@ -105,14 +101,12 @@
   .btn-danger:hover { opacity:.9; }
   .btn-sm { padding:5px 10px; font-size:12px; }
 
-  /* ---- Table Card ---- */
   .table-card { background:var(--card); border-radius:10px; box-shadow:var(--shadow); overflow:hidden; }
   .table-toolbar {
     padding:14px 18px; display:flex; align-items:center; gap:12px; border-bottom:1px solid var(--border);
   }
   .table-toolbar input {
-    padding:8px 12px; border:1px solid var(--border); border-radius:6px; font-size:13px;
-    width:260px; outline:none;
+    padding:8px 12px; border:1px solid var(--border); border-radius:6px; font-size:13px; width:260px; outline:none;
   }
   .table-toolbar input:focus { border-color:var(--primary); }
   .spacer { flex:1; }
@@ -126,17 +120,12 @@
   .empty-state { text-align:center; padding:40px 20px !important; }
   .empty-state p { color:var(--text-light); font-size:14px; }
 
-  /* ---- Dashboard Cards ---- */
   .dash-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:24px; }
-  .dash-card {
-    background:var(--card); border-radius:10px; padding:20px; box-shadow:var(--shadow); text-align:center;
-  }
+  .dash-card { background:var(--card); border-radius:10px; padding:20px; box-shadow:var(--shadow); text-align:center; }
   .dash-card .number { font-size:32px; font-weight:700; color:var(--primary); }
   .dash-card .label { font-size:13px; color:var(--text-light); margin-top:4px; }
   .dash-date-bar { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:20px; }
-  .dash-date-bar input[type=date] {
-    padding:7px 10px; border:1px solid var(--border); border-radius:6px; font-size:13px;
-  }
+  .dash-date-bar input[type=date] { padding:7px 10px; border:1px solid var(--border); border-radius:6px; font-size:13px; }
   .dash-date-bar .quick-btn {
     padding:5px 12px; border:1px solid var(--border); border-radius:6px; background:#fff;
     font-size:12px; cursor:pointer; color:var(--text);
@@ -148,7 +137,6 @@
   .count-section { background:var(--card); border-radius:10px; padding:18px; box-shadow:var(--shadow); margin-bottom:20px; }
   .count-section h3 { font-size:14px; margin-bottom:6px; color:var(--primary-dark); }
 
-  /* ---- Modal ---- */
   .modal-overlay {
     position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center;
     justify-content:center; z-index:1000;
@@ -168,31 +156,42 @@
   .modal-body textarea { min-height:80px; resize:vertical; font-family:inherit; }
   .modal-footer { padding:14px 22px; border-top:1px solid var(--border); display:flex; gap:8px; justify-content:flex-end; }
 
-  /* ---- Toast ---- */
   #toasts { position:fixed; top:20px; right:20px; z-index:2000; display:flex; flex-direction:column; gap:8px; }
-  .toast {
-    padding:12px 20px; border-radius:8px; font-size:13px; font-weight:600; color:#fff;
-    animation: slideIn .3s ease;
-  }
+  .toast { padding:12px 20px; border-radius:8px; font-size:13px; font-weight:600; color:#fff; animation: slideIn .3s ease; }
   .toast-success { background:var(--success); }
   .toast-error { background:var(--danger); }
   @keyframes slideIn { from { transform:translateX(100%); opacity:0; } to { transform:translateX(0); opacity:1; } }
-
   .loading-spinner {
     display:inline-block; width:16px; height:16px; border:2px solid rgba(255,255,255,.3);
     border-top-color:#fff; border-radius:50%; animation:spin .6s linear infinite;
   }
   @keyframes spin { to { transform:rotate(360deg); } }
-
-  /* ---- View Modal Detail ---- */
   .detail-row { display:flex; padding:8px 0; border-bottom:1px solid var(--border); }
   .detail-label { width:130px; font-size:13px; font-weight:600; color:var(--text-light); }
   .detail-value { flex:1; font-size:14px; }
+
+  /* ---- History Charts ---- */
+  .hist-section { background:var(--card); border-radius:10px; box-shadow:var(--shadow); padding:24px; margin-bottom:24px; }
+  .hist-section h3 { font-size:15px; font-weight:700; color:var(--primary-dark); margin-bottom:6px; }
+  .hist-sub { font-size:12px; color:var(--text-light); margin-bottom:20px; }
+  .hist-year-bar { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
+  .hist-year-bar select { padding:7px 12px; border:1px solid var(--border); border-radius:6px; font-size:13px; outline:none; }
+  .hist-legend { display:flex; gap:18px; margin-bottom:16px; }
+  .hist-legend-item { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-light); }
+  .hist-legend-dot { width:12px; height:12px; border-radius:3px; }
+  .hist-chart { display:flex; align-items:flex-end; gap:6px; height:240px; padding-bottom:30px; position:relative; }
+  .hist-bar-wrap { flex:1; display:flex; flex-direction:column; align-items:center; height:100%; justify-content:flex-end; position:relative; }
+  .hist-bar-stack { width:100%; max-width:52px; display:flex; flex-direction:column; justify-content:flex-end; min-height:0; }
+  .hist-bar-new { background:var(--primary); }
+  .hist-bar-readmit { background:#e67e22; border-radius:5px 5px 0 0; }
+  .hist-bar-out { background:var(--accent); border-radius:5px 5px 0 0; }
+  .hist-bar-label { position:absolute; bottom:-24px; left:50%; transform:translateX(-50%); font-size:10px; font-weight:600; color:var(--text-light); white-space:nowrap; }
+  .hist-bar-val { font-size:11px; font-weight:700; color:var(--text); white-space:nowrap; text-align:center; margin-bottom:2px; }
+  .hist-bar-pct { font-size:9px; font-weight:600; color:#e67e22; white-space:nowrap; text-align:center; margin-bottom:1px; }
 </style>
 </head>
 <body>
 
-<!-- ============ LOGIN SCREEN ============ -->
 <div class="login-screen" id="loginScreen">
   <div class="login-box">
     <h1 style="font-size:26px;font-weight:800;letter-spacing:-.5px"><span style="color:#1e4258">Intake</span><span style="color:#5b8db8">CRM</span></h1>
@@ -201,7 +200,6 @@
       <button class="active" onclick="switchAuthTab('login')">Sign In</button>
       <button onclick="switchAuthTab('signup')">Create Account</button>
     </div>
-
     <form id="loginForm" onsubmit="handleLogin(event)">
       <div class="form-group"><label>Email</label>
         <input type="email" id="loginEmail" required placeholder="you@doverecovery.com"/>
@@ -212,7 +210,6 @@
       <button type="submit" class="btn-login" id="loginBtn">Sign In</button>
       <div class="login-error" id="loginError"></div>
     </form>
-
     <form id="signupForm" style="display:none" onsubmit="handleSignup(event)">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 12px;">
         <div class="form-group"><label>First Name</label><input id="signupFirst" required/></div>
@@ -230,7 +227,6 @@
   </div>
 </div>
 
-<!-- ============ APP SCREEN ============ -->
 <div class="app-layout" id="appScreen">
   <aside class="sidebar">
     <div class="sidebar-header">
@@ -242,6 +238,7 @@
       <button class="active" onclick="showPage('dashboard')">Dashboard</button>
       <button onclick="showPage('inbound')">Inbound Referrals</button>
       <button onclick="showPage('outbound')">Outbound Referrals</button>
+      <button onclick="showPage('history')">History</button>
       <button onclick="showPage('team')">Team</button>
       <a href="https://doverobin.netlify.app" style="display:block;width:100%;padding:10px 18px;background:none;border:none;color:rgba(255,255,255,.65);font-size:14px;text-align:left;cursor:pointer;text-decoration:none;transition:all .15s;border-top:1px solid rgba(255,255,255,.08);margin-top:8px;padding-top:14px">Admissions</a>
     </nav>
@@ -249,7 +246,6 @@
       <button onclick="handleLogout()">Sign Out</button>
     </div>
   </aside>
-
   <div class="main-area">
     <div class="top-bar">
       <h1 id="pageTitle">Dashboard</h1>
@@ -259,7 +255,6 @@
   </div>
 </div>
 
-<!-- ============ MODAL ============ -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal-box">
     <div class="modal-header" id="modalTitle"></div>
@@ -267,29 +262,19 @@
     <div class="modal-footer" id="modalFooter"></div>
   </div>
 </div>
-
 <div id="toasts"></div>
 
 <script>
 const SUPABASE_URL  = 'https://xhkgazlmudfwfnjqwgqo.supabase.co';
 const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhoa2dhemxtdWRmd2ZuanF3Z3FvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2OTQ5OTIsImV4cCI6MjA5NDI3MDk5Mn0.wxcHpFlRSy2u51RNvF5Hd8hv2sIkYet98L_PR6CgsDc';
-
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
-
 const ROLES = ['Admissions Coordinator', 'Business Development', 'Manager'];
 const REFERRAL_TYPES = ['New Referral', 'Alumni', 'Detox Return'];
+const SMONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-let currentUser = null;
-let currentProfile = null;
-let profiles = [];
-let inboundData = [];
-let outboundData = [];
-let referralSources = [];
-let currentPage = 'dashboard';
-let sortCol = 'created_at';
-let sortDir = 'desc';
-let searchText = '';
+let currentUser = null, currentProfile = null, profiles = [], inboundData = [], outboundData = [], referralSources = [];
+let currentPage = 'dashboard', sortCol = 'created_at', sortDir = 'desc', searchText = '', histYear = new Date().getFullYear();
 
 function switchAuthTab(tab) {
   document.querySelectorAll('.login-box .tabs button').forEach(b => b.classList.remove('active'));
@@ -306,10 +291,8 @@ function switchAuthTab(tab) {
 
 async function handleLogin(e) {
   e.preventDefault();
-  const btn = document.getElementById('loginBtn');
-  const err = document.getElementById('loginError');
-  btn.disabled = true; btn.innerHTML = '<span class="loading-spinner"></span>';
-  err.style.display = 'none';
+  const btn = document.getElementById('loginBtn'), err = document.getElementById('loginError');
+  btn.disabled = true; btn.innerHTML = '<span class="loading-spinner"></span>'; err.style.display = 'none';
   const { data, error } = await sb.auth.signInWithPassword({
     email: document.getElementById('loginEmail').value.trim(),
     password: document.getElementById('loginPassword').value
@@ -321,10 +304,8 @@ async function handleLogin(e) {
 
 async function handleSignup(e) {
   e.preventDefault();
-  const btn = document.getElementById('signupBtn');
-  const err = document.getElementById('signupError');
-  btn.disabled = true; btn.innerHTML = '<span class="loading-spinner"></span>';
-  err.style.display = 'none';
+  const btn = document.getElementById('signupBtn'), err = document.getElementById('signupError');
+  btn.disabled = true; btn.innerHTML = '<span class="loading-spinner"></span>'; err.style.display = 'none';
   const firstName = document.getElementById('signupFirst').value.trim();
   const lastName = document.getElementById('signupLast').value.trim();
   const { data, error } = await sb.auth.signUp({
@@ -342,8 +323,7 @@ async function handleSignup(e) {
 }
 
 async function handleLogout() {
-  await sb.auth.signOut();
-  currentUser = null; currentProfile = null;
+  await sb.auth.signOut(); currentUser = null; currentProfile = null;
   document.getElementById('appScreen').style.display = 'none';
   document.getElementById('loginScreen').style.display = '';
 }
@@ -354,16 +334,12 @@ async function initApp(user) {
   document.getElementById('appScreen').style.display = 'flex';
   const { data: prof } = await sb.from('profiles').select('*').eq('id', user.id).single();
   currentProfile = prof;
-  document.getElementById('sidebarUserName').textContent =
-    (prof?.first_name || '') + ' ' + (prof?.last_name || '') || user.email;
-  await loadAllData();
-  showPage('dashboard');
+  document.getElementById('sidebarUserName').textContent = (prof?.first_name || '') + ' ' + (prof?.last_name || '') || user.email;
+  await loadAllData(); showPage('dashboard');
 }
 
 async function fetchAll(query) {
-  let allData = [];
-  let from = 0;
-  const pageSize = 1000;
+  let allData = [], from = 0; const pageSize = 1000;
   while (true) {
     const { data, error } = await query.range(from, from + pageSize - 1);
     if (error) { console.error(error); break; }
@@ -383,44 +359,37 @@ async function loadAllData() {
     fetchAll(sb.from('referral_sources').select('*').order('name'))
   ]);
   profiles = p || [];
-  inboundData = (i || []).map(r => ({
-    ...r, created_by_name: r.profiles ? r.profiles.first_name + ' ' + r.profiles.last_name : '—'
-  }));
-  outboundData = (o || []).map(r => ({
-    ...r, created_by_name: r.profiles ? r.profiles.first_name + ' ' + r.profiles.last_name : '—'
-  }));
+  inboundData = (i || []).map(r => ({ ...r, created_by_name: r.profiles ? r.profiles.first_name + ' ' + r.profiles.last_name : '—' }));
+  outboundData = (o || []).map(r => ({ ...r, created_by_name: r.profiles ? r.profiles.first_name + ' ' + r.profiles.last_name : '—' }));
   referralSources = (s || []).map(x => x.name);
 }
 
 function showPage(page) {
   currentPage = page; searchText = ''; sortCol = 'created_at'; sortDir = 'desc';
   document.querySelectorAll('.sidebar nav button').forEach(b => b.classList.remove('active'));
-  const labels = { dashboard:'Dashboard', inbound:'Inbound Referrals', outbound:'Outbound Referrals', team:'Team' };
+  const labels = { dashboard:'Dashboard', inbound:'Inbound Referrals', outbound:'Outbound Referrals', history:'History', team:'Team' };
   document.getElementById('pageTitle').textContent = labels[page] || '';
+  const pages = ['dashboard','inbound','outbound','history','team'];
   document.querySelectorAll('.sidebar nav button').forEach((b,idx) => {
-    const pages = ['dashboard','inbound','outbound','team'];
     if (pages[idx] === page) b.classList.add('active');
   });
   renderPage();
 }
 
 function renderPage() {
-  const c = document.getElementById('pageContent');
-  const a = document.getElementById('topActions');
+  const c = document.getElementById('pageContent'), a = document.getElementById('topActions');
   a.innerHTML = '';
   if (currentPage === 'dashboard') renderDashboard(c);
   else if (currentPage === 'inbound') renderReferrals(c, a, 'inbound');
   else if (currentPage === 'outbound') renderReferrals(c, a, 'outbound');
+  else if (currentPage === 'history') renderHistory(c, a);
   else if (currentPage === 'team') renderTeam(c, a);
 }
 
-let dashStartDate = '';
-let dashEndDate = '';
+let dashStartDate = '', dashEndDate = '';
 function initDashDates() {
-  const now = new Date();
-  const weekAgo = new Date(now); weekAgo.setDate(weekAgo.getDate() - 6);
-  dashEndDate = now.toISOString().slice(0,10);
-  dashStartDate = weekAgo.toISOString().slice(0,10);
+  const now = new Date(), weekAgo = new Date(now); weekAgo.setDate(weekAgo.getDate() - 6);
+  dashEndDate = now.toISOString().slice(0,10); dashStartDate = weekAgo.toISOString().slice(0,10);
 }
 initDashDates();
 
@@ -428,24 +397,21 @@ function filterByDateRange(data) {
   return data.filter(r => { if (!r.created_at) return false; const d = r.created_at.slice(0,10); return d >= dashStartDate && d <= dashEndDate; });
 }
 function countByField(data, field) {
-  const counts = {};
-  data.forEach(r => { const val = r[field] || '(blank)'; counts[val] = (counts[val] || 0) + 1; });
+  const counts = {}; data.forEach(r => { const val = r[field] || '(blank)'; counts[val] = (counts[val] || 0) + 1; });
   return Object.entries(counts).sort((a,b) => b[1] - a[1]);
 }
 function updateDashDates() {
-  const s = document.getElementById('dashStart').value;
-  const e = document.getElementById('dashEnd').value;
+  const s = document.getElementById('dashStart').value, e = document.getElementById('dashEnd').value;
   if (s) dashStartDate = s; if (e) dashEndDate = e; renderPage();
 }
 function setQuickRange(days) {
-  const now = new Date(); const past = new Date(now); past.setDate(past.getDate() - (days - 1));
+  const now = new Date(), past = new Date(now); past.setDate(past.getDate() - (days - 1));
   dashEndDate = now.toISOString().slice(0,10); dashStartDate = past.toISOString().slice(0,10); renderPage();
 }
 
 function renderDashboard(c) {
   const today = new Date().toISOString().slice(0,10);
-  const inFiltered = filterByDateRange(inboundData);
-  const outFiltered = filterByDateRange(outboundData);
+  const inFiltered = filterByDateRange(inboundData), outFiltered = filterByDateRange(outboundData);
   const inToday = inboundData.filter(r => r.created_at && r.created_at.slice(0,10) === today).length;
   const outToday = outboundData.filter(r => r.created_at && r.created_at.slice(0,10) === today).length;
   const sourceCounts = countByField(inFiltered, 'referral_source');
@@ -482,29 +448,20 @@ function renderDashboard(c) {
 }
 
 function renderReferrals(c, a, type) {
-  const isOut = type === 'outbound';
-  const label = isOut ? 'Outbound' : 'Inbound';
-  const data = isOut ? outboundData : inboundData;
+  const isOut = type === 'outbound', label = isOut ? 'Outbound' : 'Inbound', data = isOut ? outboundData : inboundData;
   a.innerHTML = `<div style="display:flex;gap:8px;">
     <button class="btn btn-outline btn-sm" onclick="exportCSV('${type}')">Export CSV</button>
     <button class="btn ${isOut?'btn-accent':'btn-primary'} btn-sm" onclick="openReferralModal('${type}')">+ New ${label}</button>
   </div>`;
   let filtered = data.filter(r => {
-    if (!searchText) return true;
-    const s = searchText.toLowerCase();
-    return (r.first_name+' '+r.last_name).toLowerCase().includes(s)
-      || (r.referral_source||'').toLowerCase().includes(s)
-      || (r.referred_to||'').toLowerCase().includes(s)
-      || (r.reason||'').toLowerCase().includes(s)
-      || (r.created_by_name||'').toLowerCase().includes(s);
+    if (!searchText) return true; const s = searchText.toLowerCase();
+    return (r.first_name+' '+r.last_name).toLowerCase().includes(s) || (r.referral_source||'').toLowerCase().includes(s)
+      || (r.referred_to||'').toLowerCase().includes(s) || (r.reason||'').toLowerCase().includes(s) || (r.created_by_name||'').toLowerCase().includes(s);
   });
   filtered.sort((a,b) => {
     let va = a[sortCol]||'', vb = b[sortCol]||'';
-    if (sortCol==='created_at') { va=new Date(va); vb=new Date(vb); }
-    else { va=String(va).toLowerCase(); vb=String(vb).toLowerCase(); }
-    if (va<vb) return sortDir==='asc'?-1:1;
-    if (va>vb) return sortDir==='asc'?1:-1;
-    return 0;
+    if (sortCol==='created_at') { va=new Date(va); vb=new Date(vb); } else { va=String(va).toLowerCase(); vb=String(vb).toLowerCase(); }
+    if (va<vb) return sortDir==='asc'?-1:1; if (va>vb) return sortDir==='asc'?1:-1; return 0;
   });
   const arrow = col => sortCol===col?(sortDir==='asc'?'&#9650;':'&#9660;'):'';
   c.innerHTML = `
@@ -514,218 +471,249 @@ function renderReferrals(c, a, type) {
         <span id="filterCount" style="font-size:13px;color:var(--text-light)">${filtered.length} referral${filtered.length!==1?'s':''}</span>
         <div class="spacer"></div>
       </div>
-      <table>
-        <thead><tr>
-          <th onclick="toggleSort('first_name')">Name ${arrow('first_name')}</th>
-          <th onclick="toggleSort('created_at')">Date / Time ${arrow('created_at')}</th>
-          ${isOut
-            ? `<th onclick="toggleSort('referred_to')">Referred To ${arrow('referred_to')}</th><th onclick="toggleSort('reason')">Reason ${arrow('reason')}</th>`
-            : `<th onclick="toggleSort('referral_source')">Source ${arrow('referral_source')}</th><th onclick="toggleSort('referral_type')">Type ${arrow('referral_type')}</th>`}
-          <th onclick="toggleSort('created_by_name')">Created By ${arrow('created_by_name')}</th>
-          <th>Actions</th>
-        </tr></thead>
-        <tbody id="referralTableBody">
-          ${filtered.length ? filtered.map(r => renderReferralRow(r, type, isOut)).join('')
-          : `<tr><td colspan="6" class="empty-state"><p>No ${label.toLowerCase()} referrals yet. Click "+ New" to add one.</p></td></tr>`}
-        </tbody>
-      </table>
+      <table><thead><tr>
+        <th onclick="toggleSort('first_name')">Name ${arrow('first_name')}</th>
+        <th onclick="toggleSort('created_at')">Date / Time ${arrow('created_at')}</th>
+        ${isOut ? `<th onclick="toggleSort('referred_to')">Referred To ${arrow('referred_to')}</th><th onclick="toggleSort('reason')">Reason ${arrow('reason')}</th>`
+               : `<th onclick="toggleSort('referral_source')">Source ${arrow('referral_source')}</th><th onclick="toggleSort('referral_type')">Type ${arrow('referral_type')}</th>`}
+        <th onclick="toggleSort('created_by_name')">Created By ${arrow('created_by_name')}</th><th>Actions</th>
+      </tr></thead>
+      <tbody id="referralTableBody">
+        ${filtered.length ? filtered.map(r => renderReferralRow(r, type, isOut)).join('')
+        : `<tr><td colspan="6" class="empty-state"><p>No ${label.toLowerCase()} referrals yet.</p></td></tr>`}
+      </tbody></table>
     </div>`;
 }
 
 function renderReferralRow(r, type, isOut) {
   return `<tr>
-    <td><strong>${esc(r.first_name)} ${esc(r.last_name)}</strong></td>
-    <td>${fmtDate(r.created_at)}</td>
+    <td><strong>${esc(r.first_name)} ${esc(r.last_name)}</strong></td><td>${fmtDate(r.created_at)}</td>
     ${isOut ? `<td>${esc(r.referred_to)}</td><td>${esc(r.reason||'—')}</td>` : `<td>${esc(r.referral_source)}</td><td>${esc(r.referral_type||'—')}</td>`}
     <td>${esc(r.created_by_name)}</td>
     <td class="actions-cell">
       <button class="btn btn-outline btn-sm" onclick="viewReferral('${type}',${r.id})">View</button>
       <button class="btn btn-outline btn-sm" onclick="openReferralModal('${type}',${r.id})">Edit</button>
       <button class="btn btn-danger btn-sm" onclick="deleteReferral('${type}',${r.id})">Del</button>
-    </td>
-  </tr>`;
+    </td></tr>`;
 }
 
 function filterTable(type) {
-  const isOut = type === 'outbound';
-  const label = isOut ? 'Outbound' : 'Inbound';
-  const data = isOut ? outboundData : inboundData;
+  const isOut = type === 'outbound', label = isOut ? 'Outbound' : 'Inbound', data = isOut ? outboundData : inboundData;
   let filtered = data.filter(r => {
-    if (!searchText) return true;
-    const s = searchText.toLowerCase();
-    return (r.first_name+' '+r.last_name).toLowerCase().includes(s)
-      || (r.referral_source||'').toLowerCase().includes(s)
-      || (r.referred_to||'').toLowerCase().includes(s)
-      || (r.reason||'').toLowerCase().includes(s)
-      || (r.created_by_name||'').toLowerCase().includes(s);
+    if (!searchText) return true; const s = searchText.toLowerCase();
+    return (r.first_name+' '+r.last_name).toLowerCase().includes(s) || (r.referral_source||'').toLowerCase().includes(s)
+      || (r.referred_to||'').toLowerCase().includes(s) || (r.reason||'').toLowerCase().includes(s) || (r.created_by_name||'').toLowerCase().includes(s);
   });
   filtered.sort((a,b) => {
     let va = a[sortCol]||'', vb = b[sortCol]||'';
-    if (sortCol==='created_at') { va=new Date(va); vb=new Date(vb); }
-    else { va=String(va).toLowerCase(); vb=String(vb).toLowerCase(); }
-    if (va<vb) return sortDir==='asc'?-1:1;
-    if (va>vb) return sortDir==='asc'?1:-1;
-    return 0;
+    if (sortCol==='created_at') { va=new Date(va); vb=new Date(vb); } else { va=String(va).toLowerCase(); vb=String(vb).toLowerCase(); }
+    if (va<vb) return sortDir==='asc'?-1:1; if (va>vb) return sortDir==='asc'?1:-1; return 0;
   });
   const tbody = document.getElementById('referralTableBody');
-  if (tbody) {
-    tbody.innerHTML = filtered.length
-      ? filtered.map(r => renderReferralRow(r, type, isOut)).join('')
-      : `<tr><td colspan="6" class="empty-state"><p>No ${label.toLowerCase()} referrals found.</p></td></tr>`;
-  }
+  if (tbody) tbody.innerHTML = filtered.length ? filtered.map(r => renderReferralRow(r, type, isOut)).join('') : `<tr><td colspan="6" class="empty-state"><p>No ${label.toLowerCase()} referrals found.</p></td></tr>`;
   const countSpan = document.getElementById('filterCount');
-  if (countSpan) { countSpan.textContent = filtered.length + ' referral' + (filtered.length !== 1 ? 's' : ''); }
+  if (countSpan) countSpan.textContent = filtered.length + ' referral' + (filtered.length !== 1 ? 's' : '');
 }
 
-function toggleSort(col) {
-  if (sortCol===col) sortDir = sortDir==='asc'?'desc':'asc';
-  else { sortCol=col; sortDir='asc'; }
-  renderPage();
-}
+function toggleSort(col) { if (sortCol===col) sortDir = sortDir==='asc'?'desc':'asc'; else { sortCol=col; sortDir='asc'; } renderPage(); }
 
 function sourceOptions(selectedValue) {
   let opts = '<option value="">— Select —</option>';
-  referralSources.forEach(name => {
-    const sel = name === selectedValue ? ' selected' : '';
-    opts += `<option value="${esc(name)}"${sel}>${esc(name)}</option>`;
-  });
+  referralSources.forEach(name => { opts += `<option value="${esc(name)}"${name===selectedValue?' selected':''}>${esc(name)}</option>`; });
   opts += '<option value="__ADD_NEW__">+ Add New Source...</option>';
   return opts;
 }
-
 function handleSourceChange(selectEl) {
   const addNewRow = document.getElementById('addNewSourceRow');
   if (selectEl.value === '__ADD_NEW__') { addNewRow.style.display = 'flex'; document.getElementById('newSourceInput').focus(); }
-  else { addNewRow.style.display = 'none'; }
+  else addNewRow.style.display = 'none';
 }
-
 async function addNewSource() {
-  const input = document.getElementById('newSourceInput');
-  const name = input.value.trim();
+  const input = document.getElementById('newSourceInput'), name = input.value.trim();
   if (!name) { toast('Please enter a source name', 'error'); return; }
   if (referralSources.some(s => s.toLowerCase() === name.toLowerCase())) { toast('That source already exists', 'error'); return; }
   const { error } = await sb.from('referral_sources').insert({ name });
   if (error) { toast(error.message, 'error'); return; }
   const { data } = await sb.from('referral_sources').select('*').order('name');
   referralSources = (data || []).map(x => x.name);
-  const select = document.getElementById('rf_src');
-  select.innerHTML = sourceOptions(name); select.value = name;
-  document.getElementById('addNewSourceRow').style.display = 'none';
-  toast('Source added!');
+  const select = document.getElementById('rf_src'); select.innerHTML = sourceOptions(name); select.value = name;
+  document.getElementById('addNewSourceRow').style.display = 'none'; toast('Source added!');
 }
 
 function openReferralModal(type, editId) {
-  const isOut = type === 'outbound';
-  const label = isOut ? 'Outbound' : 'Inbound';
-  const data = isOut ? outboundData : inboundData;
-  const existing = editId ? data.find(r => r.id === editId) : null;
+  const isOut = type === 'outbound', label = isOut ? 'Outbound' : 'Inbound';
+  const data = isOut ? outboundData : inboundData, existing = editId ? data.find(r => r.id === editId) : null;
   let body = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 16px;">
     <div class="form-group"><label>First Name</label><input id="rf_fn" value="${esc(existing?.first_name||'')}"/></div>
-    <div class="form-group"><label>Last Name</label><input id="rf_ln" value="${esc(existing?.last_name||'')}"/></div>
-  </div>`;
+    <div class="form-group"><label>Last Name</label><input id="rf_ln" value="${esc(existing?.last_name||'')}"/></div></div>`;
   if (isOut) {
-    body += `<div class="form-group"><label>Referred To</label>
-      <select id="rf_src" onchange="handleSourceChange(this)">${sourceOptions(existing?.referred_to||'')}</select>
-      <div id="addNewSourceRow" style="display:none;gap:8px;margin-top:8px;align-items:center;">
-        <input id="newSourceInput" placeholder="New source name" style="flex:1"/>
-        <button class="btn btn-primary btn-sm" type="button" onclick="addNewSource()">Add</button>
-      </div></div>
+    body += `<div class="form-group"><label>Referred To</label><select id="rf_src" onchange="handleSourceChange(this)">${sourceOptions(existing?.referred_to||'')}</select>
+      <div id="addNewSourceRow" style="display:none;gap:8px;margin-top:8px;align-items:center;"><input id="newSourceInput" placeholder="New source name" style="flex:1"/>
+      <button class="btn btn-primary btn-sm" type="button" onclick="addNewSource()">Add</button></div></div>
       <div class="form-group"><label>Reason for Referral</label><textarea id="rf_reason">${esc(existing?.reason||'')}</textarea></div>`;
   } else {
     const typeOpts = REFERRAL_TYPES.map(t => `<option value="${esc(t)}"${(existing?.referral_type||'')===t?' selected':''}>${esc(t)}</option>`).join('');
-    body += `<div class="form-group"><label>Referral Source</label>
-      <select id="rf_src" onchange="handleSourceChange(this)">${sourceOptions(existing?.referral_source||'')}</select>
-      <div id="addNewSourceRow" style="display:none;gap:8px;margin-top:8px;align-items:center;">
-        <input id="newSourceInput" placeholder="New source name" style="flex:1"/>
-        <button class="btn btn-primary btn-sm" type="button" onclick="addNewSource()">Add</button>
-      </div></div>
+    body += `<div class="form-group"><label>Referral Source</label><select id="rf_src" onchange="handleSourceChange(this)">${sourceOptions(existing?.referral_source||'')}</select>
+      <div id="addNewSourceRow" style="display:none;gap:8px;margin-top:8px;align-items:center;"><input id="newSourceInput" placeholder="New source name" style="flex:1"/>
+      <button class="btn btn-primary btn-sm" type="button" onclick="addNewSource()">Add</button></div></div>
       <div class="form-group"><label>Referral Type</label><select id="rf_type"><option value="">— Select —</option>${typeOpts}</select></div>`;
   }
-  const saveLabel = existing ? 'Save Changes' : 'Add ' + label;
   openModal((existing ? 'Edit ' : 'New ') + label + ' Referral', body,
     `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-     <button class="btn btn-primary" id="saveRefBtn" onclick="saveReferral('${type}',${editId||'null'})">${saveLabel}</button>`);
+     <button class="btn btn-primary" id="saveRefBtn" onclick="saveReferral('${type}',${editId||'null'})">${existing ? 'Save Changes' : 'Add ' + label}</button>`);
 }
 
 async function saveReferral(type, editId) {
-  const isOut = type === 'outbound';
-  const fn = document.getElementById('rf_fn').value.trim();
-  const ln = document.getElementById('rf_ln').value.trim();
-  const srcSelect = document.getElementById('rf_src');
-  const srcVal = srcSelect.value === '__ADD_NEW__' ? '' : srcSelect.value;
+  const isOut = type === 'outbound', fn = document.getElementById('rf_fn').value.trim(), ln = document.getElementById('rf_ln').value.trim();
+  const srcSelect = document.getElementById('rf_src'), srcVal = srcSelect.value === '__ADD_NEW__' ? '' : srcSelect.value;
   if (!fn || !ln) { toast('Name is required', 'error'); return; }
   if (!srcVal) { toast('Please select a ' + (isOut ? 'referred to' : 'source'), 'error'); return; }
   const btn = document.getElementById('saveRefBtn'); btn.disabled = true;
   let record;
-  if (isOut) { const reason = document.getElementById('rf_reason').value.trim(); record = { first_name: fn, last_name: ln, referred_to: srcVal, reason }; }
-  else { const refType = document.getElementById('rf_type').value; record = { first_name: fn, last_name: ln, referral_source: srcVal, referral_type: refType }; }
+  if (isOut) { record = { first_name: fn, last_name: ln, referred_to: srcVal, reason: document.getElementById('rf_reason').value.trim() }; }
+  else { record = { first_name: fn, last_name: ln, referral_source: srcVal, referral_type: document.getElementById('rf_type').value }; }
   const table = isOut ? 'outbound_referrals' : 'inbound_referrals';
   let error;
-  if (editId) { ({ error } = await sb.from(table).update(record).eq('id', editId)); }
+  if (editId) ({ error } = await sb.from(table).update(record).eq('id', editId));
   else { record.created_by = currentUser.id; ({ error } = await sb.from(table).insert(record)); }
   if (error) { toast(error.message, 'error'); btn.disabled = false; return; }
-  await loadAllData(); closeModal();
-  toast(editId ? 'Referral updated' : 'Referral added'); renderPage();
+  await loadAllData(); closeModal(); toast(editId ? 'Referral updated' : 'Referral added'); renderPage();
 }
 
 async function deleteReferral(type, id) {
   if (!confirm('Delete this referral? This cannot be undone.')) return;
-  const table = type === 'outbound' ? 'outbound_referrals' : 'inbound_referrals';
-  const { error } = await sb.from(table).delete().eq('id', id);
+  const { error } = await sb.from(type === 'outbound' ? 'outbound_referrals' : 'inbound_referrals').delete().eq('id', id);
   if (error) { toast(error.message, 'error'); return; }
   await loadAllData(); toast('Referral deleted'); renderPage();
 }
 
 function viewReferral(type, id) {
-  const isOut = type === 'outbound';
-  const data = isOut ? outboundData : inboundData;
-  const r = data.find(x => x.id === id); if (!r) return;
-  let body = `
-    <div class="detail-row"><div class="detail-label">Name</div><div class="detail-value">${esc(r.first_name)} ${esc(r.last_name)}</div></div>
+  const isOut = type === 'outbound', data = isOut ? outboundData : inboundData, r = data.find(x => x.id === id); if (!r) return;
+  let body = `<div class="detail-row"><div class="detail-label">Name</div><div class="detail-value">${esc(r.first_name)} ${esc(r.last_name)}</div></div>
     <div class="detail-row"><div class="detail-label">Date / Time</div><div class="detail-value">${fmtDate(r.created_at)}</div></div>`;
-  if (isOut) {
-    body += `<div class="detail-row"><div class="detail-label">Referred To</div><div class="detail-value">${esc(r.referred_to)}</div></div>
-      <div class="detail-row"><div class="detail-label">Reason</div><div class="detail-value">${esc(r.reason||'—')}</div></div>`;
-  } else {
-    body += `<div class="detail-row"><div class="detail-label">Source</div><div class="detail-value">${esc(r.referral_source)}</div></div>
-      <div class="detail-row"><div class="detail-label">Type</div><div class="detail-value">${esc(r.referral_type||'—')}</div></div>`;
-  }
+  if (isOut) body += `<div class="detail-row"><div class="detail-label">Referred To</div><div class="detail-value">${esc(r.referred_to)}</div></div>
+    <div class="detail-row"><div class="detail-label">Reason</div><div class="detail-value">${esc(r.reason||'—')}</div></div>`;
+  else body += `<div class="detail-row"><div class="detail-label">Source</div><div class="detail-value">${esc(r.referral_source)}</div></div>
+    <div class="detail-row"><div class="detail-label">Type</div><div class="detail-value">${esc(r.referral_type||'—')}</div></div>`;
   body += `<div class="detail-row"><div class="detail-label">Created By</div><div class="detail-value">${esc(r.created_by_name)}</div></div>`;
   openModal('Referral Details', body,
     `<button class="btn btn-outline" onclick="closeModal()">Close</button>
      <button class="btn btn-primary" onclick="closeModal();openReferralModal('${type}',${r.id})">Edit</button>`);
 }
 
+// ===================== HISTORY =====================
+function changeHistYear() { histYear = parseInt(document.getElementById('histYearSelect').value); renderPage(); }
+
+function renderHistory(c, a) {
+  a.innerHTML = '';
+  const cy = new Date().getFullYear();
+  let yearOpts = '';
+  for (let y = cy + 1; y >= cy - 4; y--) yearOpts += `<option value="${y}"${y===histYear?' selected':''}>${y}</option>`;
+
+  // Inbound by month
+  const inMonths = []; let inMax = 0;
+  for (let m = 0; m < 12; m++) {
+    const prefix = histYear + '-' + String(m + 1).padStart(2, '0');
+    const monthData = inboundData.filter(r => r.created_at && r.created_at.startsWith(prefix));
+    const total = monthData.length;
+    const readmits = monthData.filter(r => (r.referral_type || '').toLowerCase() === 'alumni').length;
+    inMonths.push({ total, readmits, newRefs: total - readmits });
+    if (total > inMax) inMax = total;
+  }
+  if (inMax === 0) inMax = 1;
+
+  let inBars = '';
+  for (let m = 0; m < 12; m++) {
+    const d = inMonths[m];
+    const totalH = Math.round((d.total / inMax) * 180);
+    const readmitH = d.total ? Math.round((d.readmits / d.total) * totalH) : 0;
+    const newH = totalH - readmitH;
+    const readPct = d.total ? Math.round((d.readmits / d.total) * 100) : 0;
+    inBars += `<div class="hist-bar-wrap">
+      ${d.readmits > 0 ? `<div class="hist-bar-pct">${readPct}% readmit</div>` : ''}
+      <div class="hist-bar-val">${d.total || ''}</div>
+      <div class="hist-bar-stack" style="height:${totalH}px">
+        ${d.readmits > 0 ? `<div class="hist-bar-readmit" style="height:${readmitH}px"></div>` : ''}
+        <div class="hist-bar-new" style="height:${newH}px;border-radius:${readmitH === 0 ? '5px 5px' : '0 0'} 0 0"></div>
+      </div>
+      <div class="hist-bar-label">${SMONTHS[m]}</div>
+    </div>`;
+  }
+
+  // Outbound by month
+  const outMonths = []; let outMax = 0;
+  for (let m = 0; m < 12; m++) {
+    const prefix = histYear + '-' + String(m + 1).padStart(2, '0');
+    const total = outboundData.filter(r => r.created_at && r.created_at.startsWith(prefix)).length;
+    outMonths.push(total);
+    if (total > outMax) outMax = total;
+  }
+  if (outMax === 0) outMax = 1;
+
+  let outBars = '';
+  for (let m = 0; m < 12; m++) {
+    const t = outMonths[m], h = Math.round((t / outMax) * 180);
+    outBars += `<div class="hist-bar-wrap">
+      <div class="hist-bar-val">${t || ''}</div>
+      <div class="hist-bar-stack hist-bar-out" style="height:${h}px"></div>
+      <div class="hist-bar-label">${SMONTHS[m]}</div>
+    </div>`;
+  }
+
+  const inTotal = inMonths.reduce((s, d) => s + d.total, 0);
+  const inReadmitTotal = inMonths.reduce((s, d) => s + d.readmits, 0);
+  const inReadmitPct = inTotal ? Math.round((inReadmitTotal / inTotal) * 100) : 0;
+  const outTotal = outMonths.reduce((s, v) => s + v, 0);
+
+  c.innerHTML = `
+    <div class="hist-year-bar">
+      <label style="font-size:13px;font-weight:600;">Year:</label>
+      <select id="histYearSelect" onchange="changeHistYear()">${yearOpts}</select>
+      <div style="margin-left:auto;font-size:13px;color:var(--text-light);">
+        <strong>${inTotal}</strong> inbound &middot; <strong style="color:#e67e22">${inReadmitTotal}</strong> readmits (${inReadmitPct}%) &middot; <strong>${outTotal}</strong> outbound
+      </div>
+    </div>
+    <div class="hist-section">
+      <h3>Inbound Referrals</h3>
+      <div class="hist-sub">Monthly breakdown &mdash; readmissions (Alumni) shown on top of each bar</div>
+      <div class="hist-legend">
+        <div class="hist-legend-item"><div class="hist-legend-dot" style="background:var(--primary)"></div>New Referrals</div>
+        <div class="hist-legend-item"><div class="hist-legend-dot" style="background:#e67e22"></div>Readmits (Alumni)</div>
+      </div>
+      <div class="hist-chart">${inBars}</div>
+    </div>
+    <div class="hist-section">
+      <h3>Outbound Referrals</h3>
+      <div class="hist-sub">Monthly outbound referral totals</div>
+      <div class="hist-legend">
+        <div class="hist-legend-item"><div class="hist-legend-dot" style="background:var(--accent)"></div>Outbound Referrals</div>
+      </div>
+      <div class="hist-chart">${outBars}</div>
+    </div>`;
+}
+
+// ===================== TEAM =====================
 function renderTeam(c, a) {
   a.innerHTML = `<button class="btn btn-primary btn-sm" onclick="openInviteModal()">Invite Team Member</button>`;
   const rows = profiles.map(p => {
     const isMe = p.id === currentUser?.id;
-    return `<tr>
-      <td><strong>${esc(p.first_name)} ${esc(p.last_name)}</strong>${isMe?' <span style="font-size:11px;color:var(--accent);">(you)</span>':''}</td>
+    return `<tr><td><strong>${esc(p.first_name)} ${esc(p.last_name)}</strong>${isMe?' <span style="font-size:11px;color:var(--accent);">(you)</span>':''}</td>
       <td>${esc(p.role||'—')}</td><td>${fmtDate(p.created_at)}</td>
-      <td>${isMe?`<button class="btn btn-outline btn-sm" onclick="openEditProfileModal('${p.id}')">Edit Profile</button>`:''}</td>
-    </tr>`;
+      <td>${isMe?`<button class="btn btn-outline btn-sm" onclick="openEditProfileModal('${p.id}')">Edit Profile</button>`:''}</td></tr>`;
   }).join('');
-  c.innerHTML = `
-    <div class="table-card"><table>
-      <thead><tr><th>Name</th><th>Role</th><th>Joined</th><th>Actions</th></tr></thead>
-      <tbody>${rows || '<tr><td colspan="4" class="empty-state"><p>No team members yet.</p></td></tr>'}</tbody>
-    </table></div>
-    <div style="margin-top:16px;padding:16px;background:var(--card);border-radius:10px;box-shadow:var(--shadow);">
-      <p style="font-size:13px;color:var(--text-light);">To add team members, click "Invite Team Member" above. They'll receive a link to create their account. Each person who signs up automatically appears here.</p>
-    </div>`;
-}
-
-function getUserEmail(uid) {
-  if (uid === currentUser?.id) return currentUser.email || '';
-  return '—';
+  c.innerHTML = `<div class="table-card"><table>
+    <thead><tr><th>Name</th><th>Role</th><th>Joined</th><th>Actions</th></tr></thead>
+    <tbody>${rows || '<tr><td colspan="4" class="empty-state"><p>No team members yet.</p></td></tr>'}</tbody>
+  </table></div>
+  <div style="margin-top:16px;padding:16px;background:var(--card);border-radius:10px;box-shadow:var(--shadow);">
+    <p style="font-size:13px;color:var(--text-light);">To add team members, click "Invite Team Member" above.</p>
+  </div>`;
 }
 
 function openInviteModal() {
-  const body = `<p style="margin-bottom:16px;color:var(--text-light);font-size:14px;">Share this page's URL with your team members. When they visit and click "Create Account," they'll automatically be added to your CRM.</p>
-    <div class="form-group"><label>Share this link</label><input type="text" id="shareLink" value="${window.location.href}" readonly onclick="this.select()"/></div>
-    <p style="font-size:12px;color:var(--text-light);">Only @doverecovery.com and @robinrecovery.com emails can sign up.</p>`;
-  openModal('Invite Team Member', body,
+  openModal('Invite Team Member',
+    `<p style="margin-bottom:16px;color:var(--text-light);font-size:14px;">Share this page's URL with your team members.</p>
+    <div class="form-group"><label>Share this link</label><input type="text" id="shareLink" value="${window.location.href}" readonly onclick="this.select()"/></div>`,
     `<button class="btn btn-outline" onclick="closeModal()">Close</button>
      <button class="btn btn-primary" onclick="navigator.clipboard.writeText(document.getElementById('shareLink').value);toast('Link copied!')">Copy Link</button>`);
 }
@@ -733,47 +721,38 @@ function openInviteModal() {
 function openEditProfileModal(uid) {
   const p = profiles.find(x => x.id === uid); if (!p) return;
   const roleOpts = ROLES.map(r => `<option value="${esc(r)}"${p.role===r?' selected':''}>${esc(r)}</option>`).join('');
-  const body = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 16px;">
-    <div class="form-group"><label>First Name</label><input id="ep_fn" value="${esc(p.first_name)}"/></div>
-    <div class="form-group"><label>Last Name</label><input id="ep_ln" value="${esc(p.last_name)}"/></div>
-  </div>
-  <div class="form-group"><label>Role</label><select id="ep_role"><option value="">— Select Role —</option>${roleOpts}</select></div>`;
-  openModal('Edit Your Profile', body,
+  openModal('Edit Your Profile',
+    `<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 16px;">
+      <div class="form-group"><label>First Name</label><input id="ep_fn" value="${esc(p.first_name)}"/></div>
+      <div class="form-group"><label>Last Name</label><input id="ep_ln" value="${esc(p.last_name)}"/></div></div>
+    <div class="form-group"><label>Role</label><select id="ep_role"><option value="">— Select Role —</option>${roleOpts}</select></div>`,
     `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
      <button class="btn btn-primary" id="saveProfileBtn" onclick="saveProfile('${uid}')">Save</button>`);
 }
 
 async function saveProfile(uid) {
-  const fn = document.getElementById('ep_fn').value.trim();
-  const ln = document.getElementById('ep_ln').value.trim();
-  const role = document.getElementById('ep_role').value;
+  const fn = document.getElementById('ep_fn').value.trim(), ln = document.getElementById('ep_ln').value.trim(), role = document.getElementById('ep_role').value;
   if (!fn || !ln) { toast('Name is required', 'error'); return; }
   const btn = document.getElementById('saveProfileBtn'); btn.disabled = true;
   const { error } = await sb.from('profiles').update({ first_name: fn, last_name: ln, role }).eq('id', uid);
   if (error) { toast(error.message, 'error'); btn.disabled = false; return; }
-  await loadAllData();
-  document.getElementById('sidebarUserName').textContent = fn + ' ' + ln;
+  await loadAllData(); document.getElementById('sidebarUserName').textContent = fn + ' ' + ln;
   closeModal(); toast('Profile updated'); renderPage();
 }
 
 function exportCSV(type) {
-  const isOut = type === 'outbound';
-  const data = isOut ? outboundData : inboundData;
+  const isOut = type === 'outbound', data = isOut ? outboundData : inboundData;
   let headers = ['First Name', 'Last Name', 'Created Date', 'Created By'];
-  if (isOut) headers.splice(2, 0, 'Referred To', 'Reason');
-  else headers.splice(2, 0, 'Referral Source', 'Referral Type');
+  if (isOut) headers.splice(2, 0, 'Referred To', 'Reason'); else headers.splice(2, 0, 'Referral Source', 'Referral Type');
   let rows = [headers.join(',')];
   data.forEach(r => {
     let row = [r.first_name, r.last_name];
-    if (isOut) { row.push(r.referred_to, r.reason || ''); }
-    else { row.push(r.referral_source, r.referral_type || ''); }
+    if (isOut) row.push(r.referred_to, r.reason || ''); else row.push(r.referral_source, r.referral_type || '');
     row.push(r.created_at, r.created_by_name || '');
     rows.push(row.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(','));
   });
-  const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url;
-  a.download = type + '_referrals_' + new Date().toISOString().slice(0, 10) + '.csv';
+  const blob = new Blob([rows.join('\n')], { type: 'text/csv' }), url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = type + '_referrals_' + new Date().toISOString().slice(0, 10) + '.csv';
   a.click(); URL.revokeObjectURL(url); toast('CSV exported');
 }
 
@@ -787,22 +766,18 @@ function closeModal() { document.getElementById('modalOverlay').classList.remove
 document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
 
 function toast(msg, type='success') {
-  const el = document.createElement('div');
-  el.className = 'toast toast-' + type; el.textContent = msg;
-  document.getElementById('toasts').appendChild(el);
-  setTimeout(() => el.remove(), 3000);
+  const el = document.createElement('div'); el.className = 'toast toast-' + type; el.textContent = msg;
+  document.getElementById('toasts').appendChild(el); setTimeout(() => el.remove(), 3000);
 }
 function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
 function fmtDate(iso) {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' })
-    + ' ' + d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+  if (!iso) return '—'; const d = new Date(iso);
+  return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) + ' ' + d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
 }
 
 (async () => {
   const { data: { session } } = await sb.auth.getSession();
-  if (session?.user) { await initApp(session.user); }
+  if (session?.user) await initApp(session.user);
 })();
 </script>
 </body>
