@@ -143,7 +143,7 @@
   }
   .modal-overlay.open { display:flex; }
   .modal-box {
-    background:var(--card); border-radius:12px; width:520px; max-width:94vw; max-height:90vh;
+    background:var(--card); border-radius:12px; width:560px; max-width:94vw; max-height:90vh;
     overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.3);
   }
   .modal-header { padding:18px 22px; border-bottom:1px solid var(--border); font-size:16px; font-weight:700; }
@@ -170,7 +170,19 @@
   .detail-label { width:130px; font-size:13px; font-weight:600; color:var(--text-light); }
   .detail-value { flex:1; font-size:14px; }
 
-  /* ---- History Charts ---- */
+  /* Substance multi-select */
+  .substance-grid {
+    display:grid; grid-template-columns:1fr 1fr; gap:2px; max-height:220px; overflow-y:auto;
+    border:1px solid var(--border); border-radius:6px; padding:8px 10px;
+  }
+  .substance-grid label {
+    display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;
+    padding:5px 6px; border-radius:4px;
+  }
+  .substance-grid label:hover { background:var(--bg); }
+  .substance-grid input[type=checkbox] { accent-color:var(--primary); width:15px; height:15px; }
+
+  /* History Charts */
   .hist-section { background:var(--card); border-radius:10px; box-shadow:var(--shadow); padding:24px; margin-bottom:24px; }
   .hist-section h3 { font-size:15px; font-weight:700; color:var(--primary-dark); margin-bottom:6px; }
   .hist-sub { font-size:12px; color:var(--text-light); margin-bottom:20px; }
@@ -271,11 +283,18 @@ const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 const ROLES = ['Admissions Coordinator', 'Business Development', 'Manager'];
 const REFERRAL_TYPES = ['New Referral', 'Alumni', 'Detox Return'];
+const TRANSFER_TYPES = ['Detox', 'Same LOC'];
+const SUBSTANCES = [
+  'Alcohol','Amphetamine','Barbiturates','Benzos','Buprenorphine','Cocaine','Crack',
+  'Fentanyl','Gabapentin','Heroin','Inhalants','Kratom','MDMA','Meth','Methadone',
+  'Opioids','Oxycodone','THC','Xanax'
+];
 const SMONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 let currentUser = null, currentProfile = null, profiles = [], inboundData = [], outboundData = [], referralSources = [];
 let currentPage = 'dashboard', sortCol = 'created_at', sortDir = 'desc', searchText = '', histYear = new Date().getFullYear();
 
+// ===================== AUTH =====================
 function switchAuthTab(tab) {
   document.querySelectorAll('.login-box .tabs button').forEach(b => b.classList.remove('active'));
   if (tab === 'login') {
@@ -328,6 +347,7 @@ async function handleLogout() {
   document.getElementById('loginScreen').style.display = '';
 }
 
+// ===================== APP INIT =====================
 async function initApp(user) {
   currentUser = user;
   document.getElementById('loginScreen').style.display = 'none';
@@ -364,6 +384,7 @@ async function loadAllData() {
   referralSources = (s || []).map(x => x.name);
 }
 
+// ===================== NAVIGATION =====================
 function showPage(page) {
   currentPage = page; searchText = ''; sortCol = 'created_at'; sortDir = 'desc';
   document.querySelectorAll('.sidebar nav button').forEach(b => b.classList.remove('active'));
@@ -386,6 +407,7 @@ function renderPage() {
   else if (currentPage === 'team') renderTeam(c, a);
 }
 
+// ===================== DASHBOARD =====================
 let dashStartDate = '', dashEndDate = '';
 function initDashDates() {
   const now = new Date(), weekAgo = new Date(now); weekAgo.setDate(weekAgo.getDate() - 6);
@@ -444,9 +466,10 @@ function renderDashboard(c) {
       <div class="count-section"><h3>Inbound by Referral Source</h3>${countTable(sourceCounts)}</div>
       <div class="count-section"><h3>Outbound by Referred To</h3>${countTable(referredToCounts)}</div>
     </div>
-    <div class="count-section" style="margin-top:20px;"><h3>Outbound by Reason</h3>${countTable(reasonCounts)}</div>`;
+    <div class="count-section" style="margin-top:20px;"><h3>Outbound by Substance</h3>${countTable(reasonCounts)}</div>`;
 }
 
+// ===================== REFERRALS TABLE =====================
 function renderReferrals(c, a, type) {
   const isOut = type === 'outbound', label = isOut ? 'Outbound' : 'Inbound', data = isOut ? outboundData : inboundData;
   a.innerHTML = `<div style="display:flex;gap:8px;">
@@ -456,7 +479,8 @@ function renderReferrals(c, a, type) {
   let filtered = data.filter(r => {
     if (!searchText) return true; const s = searchText.toLowerCase();
     return (r.first_name+' '+r.last_name).toLowerCase().includes(s) || (r.referral_source||'').toLowerCase().includes(s)
-      || (r.referred_to||'').toLowerCase().includes(s) || (r.reason||'').toLowerCase().includes(s) || (r.created_by_name||'').toLowerCase().includes(s);
+      || (r.referred_to||'').toLowerCase().includes(s) || (r.reason||'').toLowerCase().includes(s)
+      || (r.transfer_type||'').toLowerCase().includes(s) || (r.created_by_name||'').toLowerCase().includes(s);
   });
   filtered.sort((a,b) => {
     let va = a[sortCol]||'', vb = b[sortCol]||'';
@@ -464,6 +488,7 @@ function renderReferrals(c, a, type) {
     if (va<vb) return sortDir==='asc'?-1:1; if (va>vb) return sortDir==='asc'?1:-1; return 0;
   });
   const arrow = col => sortCol===col?(sortDir==='asc'?'&#9650;':'&#9660;'):'';
+  const colCount = isOut ? 7 : 6;
   c.innerHTML = `
     <div class="table-card">
       <div class="table-toolbar">
@@ -474,13 +499,17 @@ function renderReferrals(c, a, type) {
       <table><thead><tr>
         <th onclick="toggleSort('first_name')">Name ${arrow('first_name')}</th>
         <th onclick="toggleSort('created_at')">Date / Time ${arrow('created_at')}</th>
-        ${isOut ? `<th onclick="toggleSort('referred_to')">Referred To ${arrow('referred_to')}</th><th onclick="toggleSort('reason')">Reason ${arrow('reason')}</th>`
-               : `<th onclick="toggleSort('referral_source')">Source ${arrow('referral_source')}</th><th onclick="toggleSort('referral_type')">Type ${arrow('referral_type')}</th>`}
+        ${isOut
+          ? `<th onclick="toggleSort('referred_to')">Referred To ${arrow('referred_to')}</th>
+             <th onclick="toggleSort('transfer_type')">Type ${arrow('transfer_type')}</th>
+             <th onclick="toggleSort('reason')">Substance(s) ${arrow('reason')}</th>`
+          : `<th onclick="toggleSort('referral_source')">Source ${arrow('referral_source')}</th>
+             <th onclick="toggleSort('referral_type')">Type ${arrow('referral_type')}</th>`}
         <th onclick="toggleSort('created_by_name')">Created By ${arrow('created_by_name')}</th><th>Actions</th>
       </tr></thead>
       <tbody id="referralTableBody">
         ${filtered.length ? filtered.map(r => renderReferralRow(r, type, isOut)).join('')
-        : `<tr><td colspan="6" class="empty-state"><p>No ${label.toLowerCase()} referrals yet.</p></td></tr>`}
+        : `<tr><td colspan="${colCount}" class="empty-state"><p>No ${label.toLowerCase()} referrals yet.</p></td></tr>`}
       </tbody></table>
     </div>`;
 }
@@ -488,7 +517,9 @@ function renderReferrals(c, a, type) {
 function renderReferralRow(r, type, isOut) {
   return `<tr>
     <td><strong>${esc(r.first_name)} ${esc(r.last_name)}</strong></td><td>${fmtDate(r.created_at)}</td>
-    ${isOut ? `<td>${esc(r.referred_to)}</td><td>${esc(r.reason||'—')}</td>` : `<td>${esc(r.referral_source)}</td><td>${esc(r.referral_type||'—')}</td>`}
+    ${isOut
+      ? `<td>${esc(r.referred_to)}</td><td>${esc(r.transfer_type||'—')}</td><td>${esc(r.reason||'—')}</td>`
+      : `<td>${esc(r.referral_source)}</td><td>${esc(r.referral_type||'—')}</td>`}
     <td>${esc(r.created_by_name)}</td>
     <td class="actions-cell">
       <button class="btn btn-outline btn-sm" onclick="viewReferral('${type}',${r.id})">View</button>
@@ -502,7 +533,8 @@ function filterTable(type) {
   let filtered = data.filter(r => {
     if (!searchText) return true; const s = searchText.toLowerCase();
     return (r.first_name+' '+r.last_name).toLowerCase().includes(s) || (r.referral_source||'').toLowerCase().includes(s)
-      || (r.referred_to||'').toLowerCase().includes(s) || (r.reason||'').toLowerCase().includes(s) || (r.created_by_name||'').toLowerCase().includes(s);
+      || (r.referred_to||'').toLowerCase().includes(s) || (r.reason||'').toLowerCase().includes(s)
+      || (r.transfer_type||'').toLowerCase().includes(s) || (r.created_by_name||'').toLowerCase().includes(s);
   });
   filtered.sort((a,b) => {
     let va = a[sortCol]||'', vb = b[sortCol]||'';
@@ -510,13 +542,39 @@ function filterTable(type) {
     if (va<vb) return sortDir==='asc'?-1:1; if (va>vb) return sortDir==='asc'?1:-1; return 0;
   });
   const tbody = document.getElementById('referralTableBody');
-  if (tbody) tbody.innerHTML = filtered.length ? filtered.map(r => renderReferralRow(r, type, isOut)).join('') : `<tr><td colspan="6" class="empty-state"><p>No ${label.toLowerCase()} referrals found.</p></td></tr>`;
+  const colCount = isOut ? 7 : 6;
+  if (tbody) tbody.innerHTML = filtered.length ? filtered.map(r => renderReferralRow(r, type, isOut)).join('') : `<tr><td colspan="${colCount}" class="empty-state"><p>No ${label.toLowerCase()} referrals found.</p></td></tr>`;
   const countSpan = document.getElementById('filterCount');
   if (countSpan) countSpan.textContent = filtered.length + ' referral' + (filtered.length !== 1 ? 's' : '');
 }
 
 function toggleSort(col) { if (sortCol===col) sortDir = sortDir==='asc'?'desc':'asc'; else { sortCol=col; sortDir='asc'; } renderPage(); }
 
+// ===================== SUBSTANCE MATCHING (for editing legacy records) =====================
+function parseExistingReason(reason) {
+  if (!reason) return [];
+  const text = reason.toLowerCase();
+  const matched = new Set();
+  SUBSTANCES.forEach(s => { if (text.includes(s.toLowerCase())) matched.add(s); });
+  // Aliases
+  if (/\betoh\b/i.test(reason) || /\becoh\b/i.test(reason) || /\becon\b/i.test(reason)) matched.add('Alcohol');
+  if (/\bcoc\b/i.test(reason) && !matched.has('Cocaine')) matched.add('Cocaine');
+  if (/\bbzo\b/i.test(reason) || /\bbenz\b/i.test(reason)) matched.add('Benzos');
+  if (/\b(amp|adderall)\b/i.test(reason)) matched.add('Amphetamine');
+  if (/\bbup\b/i.test(reason) || /\bsuboxone\b/i.test(reason)) matched.add('Buprenorphine');
+  if (/\b(met|meth)\b/i.test(reason) && !/methadone/i.test(reason)) matched.add('Meth');
+  if (/\b(oxy|percocet)\b/i.test(reason)) matched.add('Oxycodone');
+  if (/\b(weed|marijuana)\b/i.test(reason)) matched.add('THC');
+  if (/\bhuffing\b/i.test(reason)) matched.add('Inhalants');
+  if (/\bbarb/i.test(reason)) matched.add('Barbiturates');
+  if (/\bopioid/i.test(reason) || /\bopiate/i.test(reason)) matched.add('Opioids');
+  if (/\bklonopin\b/i.test(reason)) matched.add('Benzos');
+  if (/\bgabentin\b/i.test(reason)) matched.add('Gabapentin');
+  if (/\b(fentynal|fentnayl|norfentnayl)\b/i.test(reason)) matched.add('Fentanyl');
+  return [...matched];
+}
+
+// ===================== REFERRAL SOURCE DROPDOWN =====================
 function sourceOptions(selectedValue) {
   let opts = '<option value="">— Select —</option>';
   referralSources.forEach(name => { opts += `<option value="${esc(name)}"${name===selectedValue?' selected':''}>${esc(name)}</option>`; });
@@ -540,17 +598,33 @@ async function addNewSource() {
   document.getElementById('addNewSourceRow').style.display = 'none'; toast('Source added!');
 }
 
+// ===================== REFERRAL MODALS =====================
 function openReferralModal(type, editId) {
   const isOut = type === 'outbound', label = isOut ? 'Outbound' : 'Inbound';
   const data = isOut ? outboundData : inboundData, existing = editId ? data.find(r => r.id === editId) : null;
+
   let body = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 16px;">
     <div class="form-group"><label>First Name</label><input id="rf_fn" value="${esc(existing?.first_name||'')}"/></div>
     <div class="form-group"><label>Last Name</label><input id="rf_ln" value="${esc(existing?.last_name||'')}"/></div></div>`;
+
   if (isOut) {
+    // Referred To
     body += `<div class="form-group"><label>Referred To</label><select id="rf_src" onchange="handleSourceChange(this)">${sourceOptions(existing?.referred_to||'')}</select>
       <div id="addNewSourceRow" style="display:none;gap:8px;margin-top:8px;align-items:center;"><input id="newSourceInput" placeholder="New source name" style="flex:1"/>
-      <button class="btn btn-primary btn-sm" type="button" onclick="addNewSource()">Add</button></div></div>
-      <div class="form-group"><label>Reason for Referral</label><textarea id="rf_reason">${esc(existing?.reason||'')}</textarea></div>`;
+      <button class="btn btn-primary btn-sm" type="button" onclick="addNewSource()">Add</button></div></div>`;
+
+    // Transfer Type (DETOX / SAME LOC)
+    const ttOpts = TRANSFER_TYPES.map(t => `<option value="${esc(t)}"${(existing?.transfer_type||'')===t?' selected':''}>${esc(t)}</option>`).join('');
+    body += `<div class="form-group"><label>Transfer Type</label><select id="rf_transfer_type">
+      <option value="">— Select —</option>${ttOpts}</select></div>`;
+
+    // Substance multi-select checkboxes
+    const existingSubs = parseExistingReason(existing?.reason || '');
+    body += `<div class="form-group"><label>Substance(s)</label>
+      <div class="substance-grid">${SUBSTANCES.map(s =>
+        `<label><input type="checkbox" name="rf_substance" value="${esc(s)}"${existingSubs.includes(s)?' checked':''}> ${esc(s)}</label>`
+      ).join('')}</div></div>`;
+
   } else {
     const typeOpts = REFERRAL_TYPES.map(t => `<option value="${esc(t)}"${(existing?.referral_type||'')===t?' selected':''}>${esc(t)}</option>`).join('');
     body += `<div class="form-group"><label>Referral Source</label><select id="rf_src" onchange="handleSourceChange(this)">${sourceOptions(existing?.referral_source||'')}</select>
@@ -558,6 +632,7 @@ function openReferralModal(type, editId) {
       <button class="btn btn-primary btn-sm" type="button" onclick="addNewSource()">Add</button></div></div>
       <div class="form-group"><label>Referral Type</label><select id="rf_type"><option value="">— Select —</option>${typeOpts}</select></div>`;
   }
+
   openModal((existing ? 'Edit ' : 'New ') + label + ' Referral', body,
     `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
      <button class="btn btn-primary" id="saveRefBtn" onclick="saveReferral('${type}',${editId||'null'})">${existing ? 'Save Changes' : 'Add ' + label}</button>`);
@@ -569,13 +644,29 @@ async function saveReferral(type, editId) {
   if (!fn || !ln) { toast('Name is required', 'error'); return; }
   if (!srcVal) { toast('Please select a ' + (isOut ? 'referred to' : 'source'), 'error'); return; }
   const btn = document.getElementById('saveRefBtn'); btn.disabled = true;
+
   let record;
-  if (isOut) { record = { first_name: fn, last_name: ln, referred_to: srcVal, reason: document.getElementById('rf_reason').value.trim() }; }
-  else { record = { first_name: fn, last_name: ln, referral_source: srcVal, referral_type: document.getElementById('rf_type').value }; }
+  if (isOut) {
+    const substances = [...document.querySelectorAll('input[name="rf_substance"]:checked')].map(el => el.value);
+    const transferType = document.getElementById('rf_transfer_type').value;
+    record = { first_name: fn, last_name: ln, referred_to: srcVal, reason: substances.join(', '), transfer_type: transferType || null };
+  } else {
+    record = { first_name: fn, last_name: ln, referral_source: srcVal, referral_type: document.getElementById('rf_type').value };
+  }
+
   const table = isOut ? 'outbound_referrals' : 'inbound_referrals';
   let error;
   if (editId) ({ error } = await sb.from(table).update(record).eq('id', editId));
   else { record.created_by = currentUser.id; ({ error } = await sb.from(table).insert(record)); }
+
+  // If transfer_type column doesn't exist yet, retry without it
+  if (error && isOut && error.message && error.message.includes('transfer_type')) {
+    delete record.transfer_type;
+    if (editId) ({ error } = await sb.from(table).update(record).eq('id', editId));
+    else ({ error } = await sb.from(table).insert(record));
+    if (!error) toast('Saved (add transfer_type column to enable that field)', 'error');
+  }
+
   if (error) { toast(error.message, 'error'); btn.disabled = false; return; }
   await loadAllData(); closeModal(); toast(editId ? 'Referral updated' : 'Referral added'); renderPage();
 }
@@ -592,7 +683,8 @@ function viewReferral(type, id) {
   let body = `<div class="detail-row"><div class="detail-label">Name</div><div class="detail-value">${esc(r.first_name)} ${esc(r.last_name)}</div></div>
     <div class="detail-row"><div class="detail-label">Date / Time</div><div class="detail-value">${fmtDate(r.created_at)}</div></div>`;
   if (isOut) body += `<div class="detail-row"><div class="detail-label">Referred To</div><div class="detail-value">${esc(r.referred_to)}</div></div>
-    <div class="detail-row"><div class="detail-label">Reason</div><div class="detail-value">${esc(r.reason||'—')}</div></div>`;
+    <div class="detail-row"><div class="detail-label">Transfer Type</div><div class="detail-value">${esc(r.transfer_type||'—')}</div></div>
+    <div class="detail-row"><div class="detail-label">Substance(s)</div><div class="detail-value">${esc(r.reason||'—')}</div></div>`;
   else body += `<div class="detail-row"><div class="detail-label">Source</div><div class="detail-value">${esc(r.referral_source)}</div></div>
     <div class="detail-row"><div class="detail-label">Type</div><div class="detail-value">${esc(r.referral_type||'—')}</div></div>`;
   body += `<div class="detail-row"><div class="detail-label">Created By</div><div class="detail-value">${esc(r.created_by_name)}</div></div>`;
@@ -610,7 +702,6 @@ function renderHistory(c, a) {
   let yearOpts = '';
   for (let y = cy + 1; y >= cy - 4; y--) yearOpts += `<option value="${y}"${y===histYear?' selected':''}>${y}</option>`;
 
-  // Inbound by month
   const inMonths = []; let inMax = 0;
   for (let m = 0; m < 12; m++) {
     const prefix = histYear + '-' + String(m + 1).padStart(2, '0');
@@ -634,13 +725,12 @@ function renderHistory(c, a) {
       <div class="hist-bar-val">${d.total || ''}</div>
       <div class="hist-bar-stack" style="height:${totalH}px">
         ${d.readmits > 0 ? `<div class="hist-bar-readmit" style="height:${readmitH}px"></div>` : ''}
-        <div class="hist-bar-new" style="height:${newH}px;border-radius:${readmitH === 0 ? '5px 5px' : '0 0'} 0 0"></div>
+        <div class="hist-bar-new" style="height:${newH}px;border-radius:${readmitH===0?'5px 5px':'0 0'} 0 0"></div>
       </div>
       <div class="hist-bar-label">${SMONTHS[m]}</div>
     </div>`;
   }
 
-  // Outbound by month
   const outMonths = []; let outMax = 0;
   for (let m = 0; m < 12; m++) {
     const prefix = histYear + '-' + String(m + 1).padStart(2, '0');
@@ -740,14 +830,17 @@ async function saveProfile(uid) {
   closeModal(); toast('Profile updated'); renderPage();
 }
 
+// ===================== CSV EXPORT =====================
 function exportCSV(type) {
   const isOut = type === 'outbound', data = isOut ? outboundData : inboundData;
   let headers = ['First Name', 'Last Name', 'Created Date', 'Created By'];
-  if (isOut) headers.splice(2, 0, 'Referred To', 'Reason'); else headers.splice(2, 0, 'Referral Source', 'Referral Type');
+  if (isOut) headers.splice(2, 0, 'Referred To', 'Transfer Type', 'Substance(s)');
+  else headers.splice(2, 0, 'Referral Source', 'Referral Type');
   let rows = [headers.join(',')];
   data.forEach(r => {
     let row = [r.first_name, r.last_name];
-    if (isOut) row.push(r.referred_to, r.reason || ''); else row.push(r.referral_source, r.referral_type || '');
+    if (isOut) row.push(r.referred_to, r.transfer_type || '', r.reason || '');
+    else row.push(r.referral_source, r.referral_type || '');
     row.push(r.created_at, r.created_by_name || '');
     rows.push(row.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(','));
   });
@@ -756,6 +849,7 @@ function exportCSV(type) {
   a.click(); URL.revokeObjectURL(url); toast('CSV exported');
 }
 
+// ===================== UTILITIES =====================
 function openModal(title, bodyHtml, footerHtml) {
   document.getElementById('modalTitle').textContent = title;
   document.getElementById('modalBody').innerHTML = bodyHtml;
