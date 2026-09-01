@@ -437,11 +437,32 @@ function renderDashboard(c) {
   const inToday = inboundData.filter(r => r.created_at && r.created_at.slice(0,10) === today).length;
   const outToday = outboundData.filter(r => r.created_at && r.created_at.slice(0,10) === today).length;
   const sourceCounts = countByField(inFiltered, 'referral_source');
-  const referredToCounts = countByField(outFiltered, 'referred_to');
   const reasonCounts = countByField(outFiltered, 'reason');
   function countTable(rows) {
     if (!rows.length) return '<p style="font-size:13px;color:var(--text-light);padding:8px 0;">No data in this range.</p>';
     return `<table class="count-table">${rows.map(([name,cnt]) => `<tr><td>${esc(name)}</td><td>${cnt}</td></tr>`).join('')}</table>`;
+  }
+  // Outbound by Referred To with Transfer Type breakdown
+  function referredToTable(data) {
+    if (!data.length) return '<p style="font-size:13px;color:var(--text-light);padding:8px 0;">No data in this range.</p>';
+    const grouped = {};
+    data.forEach(r => {
+      const dest = r.referred_to || '(blank)';
+      if (!grouped[dest]) grouped[dest] = { total: 0, types: {} };
+      grouped[dest].total++;
+      const tt = r.transfer_type || '';
+      if (tt) grouped[dest].types[tt] = (grouped[dest].types[tt] || 0) + 1;
+    });
+    const sorted = Object.entries(grouped).sort((a,b) => b[1].total - a[1].total);
+    let html = '<table class="count-table">';
+    sorted.forEach(([name, info]) => {
+      html += `<tr><td><strong>${esc(name)}</strong></td><td>${info.total}</td></tr>`;
+      Object.entries(info.types).sort((a,b) => b[1] - a[1]).forEach(([tt, cnt]) => {
+        html += `<tr><td style="padding-left:22px;color:var(--text-light);font-size:12px">${esc(tt)}</td><td style="font-size:12px;color:var(--text-light)">${cnt}</td></tr>`;
+      });
+    });
+    html += '</table>';
+    return html;
   }
   c.innerHTML = `
     <div class="dash-date-bar">
@@ -464,7 +485,7 @@ function renderDashboard(c) {
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
       <div class="count-section"><h3>Inbound by Referral Source</h3>${countTable(sourceCounts)}</div>
-      <div class="count-section"><h3>Outbound by Referred To</h3>${countTable(referredToCounts)}</div>
+      <div class="count-section"><h3>Outbound by Referred To</h3>${referredToTable(outFiltered)}</div>
     </div>
     <div class="count-section" style="margin-top:20px;"><h3>Outbound by Substance</h3>${countTable(reasonCounts)}</div>`;
 }
